@@ -174,6 +174,147 @@
         <li>
           <a class="card" href="https://small534460.github.io/" target="_blank" rel="noopener noreferrer">
             <div class="title">————好吧，什么也没有————</div>
+            
+<!-- 生物生存模拟小游戏 BEGIN -->
+<div style="margin-top:12px;">
+  <h3 style="margin:0;color:var(--muted);font-size:13px;">小小游戏：生物生存模拟</h3>
+  <canvas id="lifeCanvas" width="440" height="440" style="background:rgba(15,23,42,0.15);border-radius:10px;border:1px solid var(--accent);box-shadow:0 2px 8px rgba(96,165,250,0.15);display:block;margin:8px auto;"></canvas>
+  <div style="color:#a2b7d7;font-size:12px;">蓝色是生物，绿色是食物。生物会自动移动并寻找食物，若一天未吃到食物则会死亡。刷新页面可重新开始。</div>
+</div>
+<script>
+const canvas = document.getElementById('lifeCanvas');
+const ctx = canvas.getContext('2d');
+
+const GRID_SIZE = 440;
+const ENTITY_SIZE = 6;
+const NUM_ANIMALS = 10;
+const NUM_FOOD = 20;
+const MOVE_SPEED = 2;
+const DAY_LENGTH = 120; // “一天”步数
+
+class Animal {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.alive = true;
+    this.daysWithoutFood = 0;
+    this.target = null;
+  }
+  findFood(foods) {
+    let minD = Infinity;
+    let nearest = null;
+    for (const food of foods) {
+      const d = Math.hypot(food.x-this.x, food.y-this.y);
+      if (d < minD) {
+        minD = d;
+        nearest = food;
+      }
+    }
+    this.target = nearest;
+  }
+  move() {
+    if (!this.target) return;
+    const dx = this.target.x - this.x;
+    const dy = this.target.y - this.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist < MOVE_SPEED) {
+      this.x = this.target.x;
+      this.y = this.target.y;
+    } else {
+      this.x += MOVE_SPEED * dx / dist;
+      this.y += MOVE_SPEED * dy / dist;
+    }
+    // 边界防止出界
+    this.x = Math.max(ENTITY_SIZE, Math.min(GRID_SIZE-ENTITY_SIZE, this.x));
+    this.y = Math.max(ENTITY_SIZE, Math.min(GRID_SIZE-ENTITY_SIZE, this.y));
+  }
+}
+
+class Food {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+}
+
+let animals = [];
+let foods = [];
+let dayStep = 0;
+
+function init() {
+  animals = [];
+  foods = [];
+  for (let i=0;i<NUM_ANIMALS;i++)
+    animals.push(new Animal(Math.random()*GRID_SIZE, Math.random()*GRID_SIZE));
+  for (let i=0;i<NUM_FOOD;i++)
+    foods.push(new Food(Math.random()*GRID_SIZE, Math.random()*GRID_SIZE));
+  dayStep = 0;
+}
+init();
+
+function update() {
+  dayStep++;
+  // 生物找食物
+  for (const ani of animals) {
+    ani.findFood(foods);
+    ani.move();
+    // 检测是否吃到食物
+    if (ani.target) {
+      const d = Math.hypot(ani.x-ani.target.x, ani.y-ani.target.y);
+      if (d < ENTITY_SIZE+2) {
+        // 吃掉食物
+        foods = foods.filter(f => f !== ani.target);
+        ani.daysWithoutFood = 0;
+        // 新增食物
+        foods.push(new Food(Math.random()*GRID_SIZE, Math.random()*GRID_SIZE));
+      }
+    }
+  }
+  // 生物一天未吃到食物则死亡
+  if (dayStep % DAY_LENGTH === 0) {
+    for (const ani of animals) {
+      // 若本日未吃到食物
+      if (ani.daysWithoutFood >= 1) ani.alive = false;
+      ani.daysWithoutFood++;
+    }
+  }
+  animals = animals.filter(a=>a.alive);
+}
+
+function render() {
+  ctx.clearRect(0,0,GRID_SIZE,GRID_SIZE);
+  // 食物(绿色)
+  for (const food of foods) {
+    ctx.beginPath();
+    ctx.arc(food.x, food.y, ENTITY_SIZE, 0, Math.PI*2);
+    ctx.fillStyle = "#34d399";
+    ctx.fill();
+    ctx.closePath();
+  }
+  // 生物(蓝色)
+  for (const ani of animals) {
+    ctx.beginPath();
+    ctx.arc(ani.x, ani.y, ENTITY_SIZE, 0, Math.PI*2);
+    ctx.fillStyle = ani.alive ? "#3b82f6" : "#374151";
+    ctx.fill();
+    ctx.closePath();
+  }
+}
+
+function loop() {
+  update();
+  render();
+  if (animals.length === 0) {
+    ctx.font = "18px Arial";
+    ctx.fillStyle = "#ef4444";
+    ctx.fillText("所有生物都死亡了", 120, 220);
+  } else {
+    requestAnimationFrame(loop);
+  }
+}
+loop();
+</script>
+<!-- 生物生存模拟小游戏 END -->
           </a>
         </li>
       </ul>
