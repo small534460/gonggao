@@ -15,10 +15,8 @@
 
     html, body { height: 100%; }
 
-    /* 背景使用图片 + 渐变��加，替换下面的 URL 即可更换背景图 */
     body{
       margin: 0;
-      /* 图片来源示例：Unsplash（可替换为你自己的图片 URL） */
       background:
         linear-gradient(180deg, rgba(7,16,38,0.6) 0%, rgba(7,16,38,0.6) 100%),
         url('https://free.boltp.com/2026/01/17/696b9e7124a9e.webp') center/cover no-repeat fixed;
@@ -174,6 +172,7 @@
         <li>
           <a class="card" href="https://small534460.github.io/" target="_blank" rel="noopener noreferrer">
             <div class="title">————好吧，什么也没有————</div>
+            <canvas id="lifeCanvas" width="440" height="440" style="border-radius:12px;box-shadow:0 6px 18px rgba(96,165,250,0.12);margin-top:10px;"></canvas>
             <script>
 // 平衡优化生物生态模拟
 const canvas = document.getElementById('lifeCanvas');
@@ -454,7 +453,7 @@ function loop() {
   if(!(animals.length===0 && hunters.length===0)) requestAnimationFrame(loop);
 }
 loop();
-</script>
+            </script>
           </a>
         </li>
       </ul>
