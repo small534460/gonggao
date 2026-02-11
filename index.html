@@ -185,19 +185,19 @@ const NUM_HUNTERS = 2;
 const FOOD_MAX = 22;
 const FOOD_REFRESH = 14;
 const MOVE_SPEED = 1.8;         // 普通生物移动速度
-const HUNTER_SPEED = 2.2;       // 猎人生物移动速度
+const HUNTER_SPEED = 1.9;       // 猎人生物移动速度
 const DAY_LENGTH = 300;         // “一天”步数拉长
 const NORMAL_NEED = 1;          // 蓝生物一天消耗
 const HUNTER_NEED = 2;          // 红生物一天消耗
 const NORMAL_BORN = 5;          // 普通生物繁殖阈值
-const HUNTER_BORN = 7;          // 猎人生物繁殖阈值
+const HUNTER_BORN = 3;          // 猎人生物繁殖阈值
 const BORN_ENERGY_COST = 2;     // 繁殖需耗能量
 const ANIMAL_VIEW_DIST = 60;
 const HUNTER_VIEW_DIST = 85;
 const ESCAPE_FORCE = 3.2;
 const HUNTER_ATTACK_DIST = ENTITY_SIZE * 1.7;
 const BABY_GUARD_AGE = 1;       // 新生物一天内不被猎杀
-const MAX_TOTAL = 60;           // 生物总数上限(极端增长时收敛保护)
+const MAX_TOTAL = 120;           // 生物总数上限(极端增长时收敛保护)
 
 function randomPos() {
   return Math.random() * (GRID_SIZE - 2*ENTITY_SIZE) + ENTITY_SIZE;
@@ -437,7 +437,7 @@ function render() {
   ctx.fillText(`天数:${ticks ? Math.floor(ticks/DAY_LENGTH)+1 : 1}`,10,20);
   ctx.fillText(`蓝生物: ${animals.length}`,110,20);
   ctx.fillStyle="#ee4444";
-  ctx.fillText(`红猎人: ${hunters.length}`,220,20);
+  ctx.fillText(`红生物: ${hunters.length}`,220,20);
   ctx.fillStyle="#14b8a6";
   ctx.fillText(`食物: ${foods.length}`,320,20);
   if (animals.length===0 && hunters.length===0){
