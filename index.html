@@ -167,12 +167,13 @@ const ctx = canvas.getContext('2d');
 
 const GRID_SIZE = 440;                   // 地图宽度/高度(px)
 const ENTITY_SIZE = 7;                   // 生物、猎人、食物的半径(px)
-const NUM_ANIMALS = 14;                  // 启动时蓝生物数量
-const NUM_HUNTERS = 3;                   // 启动时红猎人数量
+const NUM_ANIMALS = 10;                  // 启动时蓝生物数量
+const NUM_HUNTERS = 2;                   // 启动时红猎人数量
 const FOOD_MAX = 22;                     // 食物最大数量（极端收敛保护）
 const FOOD_REFRESH = 14;                 // 默认刷新到多少个食物
-const MOVE_SPEED = 1.9;                  // 蓝生物移动速度(px/步)
-const HUNTER_SPEED = 1.8;                // 红猎人移动速度(px/步)
+const FOOD_ALERT = 5;                    // 食物警戒线：当食物数量≤此值时自动刷新，数值可调整
+const MOVE_SPEED = 1.8;                  // 蓝生物移动速度(px/步)
+const HUNTER_SPEED = 2.2;                // 红猎人移动速度(px/步)
 const DAY_LENGTH = 300;                  // 一天步数
 const NORMAL_NEED = 1;                   // 蓝生物一天消耗能量
 const HUNTER_NEED = 2;                   // 红猎人一天消耗能量
@@ -299,14 +300,24 @@ class Hunter {
 let foods=[], animals=[], hunters=[];
 let dayStep=0, ticks=0, totalBorn = 0;
 
+/**
+ * 补充食物：
+ * 当食物数量≤FOOD_ALERT（警戒线）或force为true时，将食物数量补到FOOD_REFRESH
+ * 警戒线可根据需要调整，使生态更加平稳
+ */
 function replenishFood(force=false) {
-  let need = FOOD_REFRESH - foods.length;
-  if (need<=0 && !force) return;
-  for(let i=0;i<need || (force && foods.length === 0) ;i++){
-    foods.push(new Food(randomPos(), randomPos()));
+  if (foods.length <= FOOD_ALERT || force) {
+    let need = FOOD_REFRESH - foods.length;
+    for(let i=0;i<need;i++){
+      foods.push(new Food(randomPos(), randomPos()));
+    }
   }
 }
 
+/**
+ * 初始化生态系统
+ * 包括蓝生物、红猎人和初始食物
+ */
 function init() {
   foods = [];
   animals = [];
@@ -314,7 +325,7 @@ function init() {
   dayStep=0; totalBorn=0;
   for(let i=0;i<NUM_ANIMALS;i++) animals.push(new Animal(randomPos(), randomPos()));
   for(let i=0;i<NUM_HUNTERS;i++) hunters.push(new Hunter(randomPos(), randomPos()));
-  replenishFood(true);
+  replenishFood(true); // 初始化时强制补满食物
 }
 init();
 
@@ -322,7 +333,8 @@ init();
 function update() {
   ticks++;
   dayStep++;
-  // 行动(取消碰撞箱)
+
+  // 生物移动（不需要碰撞箱，全部可重合）
   for(const a of animals) a.act(hunters, foods);
   for(const h of hunters) h.act(animals, foods);
 
@@ -336,13 +348,14 @@ function update() {
       }
     }
   }
-  // 猎人吃蓝生物或食物，记录是否吃到蓝生物/吃到的食物数
+
+  // 猎人吃蓝生物和食物，记录吃到的类型和数量
   for(const h of hunters) {
     if (!h.alive) continue;
     h.ateBlue = false;
     h.ateFood = 0;
 
-    // 检查猎杀蓝生物
+    // 猎人吃蓝生物
     for (const a of animals) {
       if(a.alive && !a.isChild() && Math.hypot(h.x - a.x, h.y - a.y) < HUNTER_ATTACK_DIST){
         a.alive = false;
@@ -351,7 +364,7 @@ function update() {
         break;
       }
     }
-    // 检查吃食物
+    // 猎人吃食物（没吃到蓝生物情况下）
     if (!h.ateBlue) {
       for (const f of foods) {
         if (Math.hypot(h.x - f.x, h.y - f.y) < ENTITY_SIZE*1.3) {
@@ -364,13 +377,13 @@ function update() {
     }
   }
 
-  // 不等一天刷新，食物吃光就补充
-  if (foods.length === 0) replenishFood(true);
+  // === 新机制：食物数量低于警戒线自动刷新 ===
+  replenishFood();
 
   //--- 每天结束结算 ---
   if (dayStep >= DAY_LENGTH) {
     let newbornAnimals=[], newbornHunters=[];
-    // 蓝生物结算/繁殖
+    // 蓝生物死亡、繁殖、宝宝成长
     for (const a of animals) {
       a.age++;
       if (!a.alive) continue;
@@ -382,7 +395,7 @@ function update() {
       }
       if (a.isChild()) a.childAge++; // 宝宝长大
     }
-    // 猎人结算/新逻辑
+    // 红猎人判定增添新逻辑
     for (const h of hunters) {
       h.age++;
       // 天结束先消耗能量
@@ -418,7 +431,7 @@ function update() {
         if (h.isChild()) h.childAge++;
       }
     }
-    // 更新
+    // 更新生物与猎人数量
     animals = animals.filter(a=>a.alive);
     hunters = hunters.filter(h=>h.alive);
     animals = animals.concat(newbornAnimals);
