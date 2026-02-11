@@ -156,61 +156,46 @@
             <div class="title">————好吧，什么也没有————</div>
             <canvas id="lifeCanvas" width="440" height="440" style="border-radius:12px;box-shadow:0 6px 18px rgba(96,165,250,0.12);margin-top:10px;"></canvas>
             <script>
-// --- 生态系统模拟器，满足你的三大需求 ---
+/**
+ * 平衡优化生物生态模拟
+ * Small 3 修改/升级版，带详细注释及新功能！
+ */
 
+//==== 基本参数 ====
 const canvas = document.getElementById('lifeCanvas');
 const ctx = canvas.getContext('2d');
 
-const GRID_SIZE = 440;
-const ENTITY_SIZE = 7;
-const NUM_ANIMALS = 10;
-const NUM_HUNTERS = 2;
-const FOOD_MAX = 22;
-const FOOD_REFRESH = 14;
-const MOVE_SPEED = 1.8;
-const HUNTER_SPEED = 2.2;
-const DAY_LENGTH = 300;
-const NORMAL_NEED = 1;
-const HUNTER_NEED = 2;
-const NORMAL_BORN = 5;
-const HUNTER_BORN = 7;
-const BORN_ENERGY_COST = 2;
-const ANIMAL_VIEW_DIST = 60;
-const HUNTER_VIEW_DIST = 85;
-const ESCAPE_FORCE = 3.2;
-const HUNTER_ATTACK_DIST = ENTITY_SIZE * 1.7;
-const BABY_GUARD_AGE = 1;
-const MAX_TOTAL = 60;
+const GRID_SIZE = 440;                   // 地图宽度/高度(px)
+const ENTITY_SIZE = 7;                   // 生物、猎人、食物的半径(px)
+const NUM_ANIMALS = 10;                  // 启动时蓝生物数量
+const NUM_HUNTERS = 2;                   // 启动时红猎人数量
+const FOOD_MAX = 22;                     // 食物最大数量（极端收敛保护）
+const FOOD_REFRESH = 14;                 // 默认刷新到多少个食物
+const MOVE_SPEED = 1.8;                  // 蓝生物移动速度(px/步)
+const HUNTER_SPEED = 2.2;                // 红猎人移动速度(px/步)
+const DAY_LENGTH = 300;                  // 一天步数
+const NORMAL_NEED = 1;                   // 蓝生物一天消耗能量
+const HUNTER_NEED = 2;                   // 红猎人一天消耗能量
+const NORMAL_BORN = 5;                   // 蓝生物繁殖能量阈值
+const HUNTER_BORN = 7;                   // 红猎人繁殖能量阈值
+const BORN_ENERGY_COST = 2;              // 繁殖需要消耗能量
+const ANIMAL_VIEW_DIST = 60;             // 蓝生物逃猎视野（px）
+const HUNTER_VIEW_DIST = GRID_SIZE * 2;  // 红猎人视野(全图视野，覆盖地图上所有蓝生物)
+const ESCAPE_FORCE = 3.2;                // 蓝生物逃跑时加速系数
+const HUNTER_ATTACK_DIST = ENTITY_SIZE * 1.7; // 猎人捕杀距离(px)
+const BABY_GUARD_AGE = 1;                // 宝宝保护期(天)
+const MAX_TOTAL = 60;                    // 生物总数上限
 
-// 检查两个实体是否重叠
-function isOverlap(x1, y1, x2, y2, radius1 = ENTITY_SIZE, radius2 = ENTITY_SIZE) {
-  return Math.hypot(x1 - x2, y1 - y2) < (radius1 + radius2);
+//==== 工具函数 ====
+function randomPos() {
+  return Math.random() * (GRID_SIZE - 2*ENTITY_SIZE) + ENTITY_SIZE;
 }
 
-// 在所有现有实体上随机生成，不重叠（有最大尝试限制，避免死循环）
-function randomPosNoOverlap(others, radius = ENTITY_SIZE, maxTries = 80) {
-  for (let t = 0; t < maxTries; ++t) {
-    const x = Math.random() * (GRID_SIZE - 2 * radius) + radius;
-    const y = Math.random() * (GRID_SIZE - 2 * radius) + radius;
-    let ok = true;
-    for (const o of others) {
-      const r2 = o.radius || ENTITY_SIZE;
-      if (isOverlap(x, y, o.x, o.y, radius, r2)) { ok = false; break; }
-    }
-    if (ok) return { x, y };
-  }
-  // 失败则随机一个位置
-  return {
-    x: Math.random() * (GRID_SIZE - 2 * radius) + radius,
-    y: Math.random() * (GRID_SIZE - 2 * radius) + radius
-  };
-}
-
+//==== 类定义 ====
 class Food {
   constructor(x, y) {
     this.x = x;
     this.y = y;
-    this.radius = ENTITY_SIZE-2;
   }
 }
 
@@ -218,20 +203,20 @@ class Animal {
   constructor(x, y) {
     this.x = x;
     this.y = y;
-    this.energy = 2;
+    this.energy = 2;               // 初始能量
     this.type = "normal";
     this.alive = true;
-    this.age = 0;
-    this.childAge = 0;
-    this.radius = ENTITY_SIZE;
+    this.age = 0;                  // 存活天数
+    this.childAge = 0;             // 宝宝期计数
   }
   get need() { return NORMAL_NEED; }
   get born() { return NORMAL_BORN; }
   color() { return "#3b82f6"; }
   isChild() { return this.childAge > 0 && this.childAge <= BABY_GUARD_AGE; }
-  act(hunters, foods, allEntities) {
+  act(hunters, foods) {
     if (!this.alive) return;
     let tx = 0, ty = 0;
+    // 逃最近猎人
     let escape = false;
     for (const h of hunters) {
       const d = Math.hypot(h.x - this.x, h.y - this.y);
@@ -241,6 +226,7 @@ class Animal {
         escape = true;
       }
     }
+    // 没猎人则追食物
     if (!escape) {
       let best = null, bd = 99999;
       for (const f of foods) {
@@ -251,22 +237,12 @@ class Animal {
     } else {
       tx *= ESCAPE_FORCE; ty *= ESCAPE_FORCE;
     }
+    // 移动
     const norm = Math.max(1, Math.hypot(tx, ty));
-    let nx = this.x + MOVE_SPEED * tx / norm;
-    let ny = this.y + MOVE_SPEED * ty / norm;
-    // 边界限制
-    nx = Math.max(ENTITY_SIZE, Math.min(GRID_SIZE-ENTITY_SIZE, nx));
-    ny = Math.max(ENTITY_SIZE, Math.min(GRID_SIZE-ENTITY_SIZE, ny));
-    // 碰撞避免
-    for (const o of allEntities) {
-      if (o === this) continue;
-      if (isOverlap(nx, ny, o.x, o.y, this.radius, o.radius)) {
-        // 被卡住则原地不动
-        return;
-      }
-    }
-    this.x = nx;
-    this.y = ny;
+    this.x += MOVE_SPEED * tx / norm;
+    this.y += MOVE_SPEED * ty / norm;
+    this.x = Math.max(ENTITY_SIZE, Math.min(GRID_SIZE-ENTITY_SIZE, this.x));
+    this.y = Math.max(ENTITY_SIZE, Math.min(GRID_SIZE-ENTITY_SIZE, this.y));
   }
 }
 
@@ -274,19 +250,22 @@ class Hunter {
   constructor(x, y) {
     this.x = x;
     this.y = y;
-    this.energy = 3;
+    this.energy = 3;               // 初始能量
     this.type = "hunter";
     this.alive = true;
     this.age = 0;
     this.childAge = 0;
-    this.radius = ENTITY_SIZE;
+    // 新增一天的记录
+    this.ateBlue = false;          // 今天是否吃到蓝生物
+    this.ateFood = 0;              // 今天吃到的食物数量
   }
   get need() { return HUNTER_NEED; }
   get born() { return HUNTER_BORN; }
   color() { return "#ef4444"; }
   isChild() { return this.childAge > 0 && this.childAge <= BABY_GUARD_AGE; }
-  act(animals, foods, allEntities) {
+  act(animals, foods) {
     if (!this.alive) return;
+    // 追全图内最近蓝生物（视野覆盖全地图）
     let best = null, bd = 99999;
     for (const a of animals) {
       if (a.alive && !a.isChild()) {
@@ -294,12 +273,12 @@ class Hunter {
         if (d < bd && d < HUNTER_VIEW_DIST) { bd = d; best = a; }
       }
     }
-    let nx, ny;
     if (best) {
       const dx = best.x - this.x, dy = best.y - this.y, norm = Math.max(1, Math.hypot(dx, dy));
-      nx = this.x + HUNTER_SPEED * dx / norm;
-      ny = this.y + HUNTER_SPEED * dy / norm;
+      this.x += HUNTER_SPEED * dx / norm;
+      this.y += HUNTER_SPEED * dy / norm;
     } else {
+      // 改为追食物（如果没蓝生物）
       let fbest = null, fd = 99999;
       for (const f of foods) {
         const d = Math.hypot(f.x - this.x, f.y - this.y);
@@ -307,48 +286,24 @@ class Hunter {
       }
       if (fbest) {
         const dx = fbest.x - this.x, dy = fbest.y - this.y, norm = Math.max(1, Math.hypot(dx, dy));
-        nx = this.x + HUNTER_SPEED * dx / norm;
-        ny = this.y + HUNTER_SPEED * dy / norm;
-      } else {
-        nx = this.x; ny = this.y;
+        this.x += HUNTER_SPEED * dx / norm;
+        this.y += HUNTER_SPEED * dy / norm;
       }
     }
-    nx = Math.max(ENTITY_SIZE, Math.min(GRID_SIZE-ENTITY_SIZE, nx));
-    ny = Math.max(ENTITY_SIZE, Math.min(GRID_SIZE-ENTITY_SIZE, ny));
-    // 碰撞避免
-    for (const o of allEntities) {
-      if (o === this) continue;
-      if (isOverlap(nx, ny, o.x, o.y, this.radius, o.radius)) {
-        // 被卡住则原地不动
-        return;
-      }
-    }
-    this.x = nx;
-    this.y = ny;
+    this.x = Math.max(ENTITY_SIZE, Math.min(GRID_SIZE-ENTITY_SIZE, this.x));
+    this.y = Math.max(ENTITY_SIZE, Math.min(GRID_SIZE-ENTITY_SIZE, this.y));
   }
 }
 
-// 主体数据
+//==== 主体数据 ====
 let foods=[], animals=[], hunters=[];
 let dayStep=0, ticks=0, totalBorn = 0;
 
-function allEntitiesArr() {
-  // 不包括已经死亡的动物和猎人
-  return foods.concat(animals.filter(a=>a.alive)).concat(hunters.filter(h=>h.alive));
-}
-
-// 食物刷新机制
 function replenishFood(force=false) {
   let need = FOOD_REFRESH - foods.length;
   if (need<=0 && !force) return;
-  // 如果没有食物则补到FOOD_REFRESH；启动时也补满
-  const entities = allEntitiesArr();
   for(let i=0;i<need || (force && foods.length === 0) ;i++){
-    // 检查不与已有实体重叠
-    let pos = randomPosNoOverlap(entities.concat(foods), ENTITY_SIZE-2);
-    let food = new Food(pos.x, pos.y);
-    foods.push(food);
-    entities.push(food);
+    foods.push(new Food(randomPos(), randomPos()));
   }
 }
 
@@ -357,87 +312,113 @@ function init() {
   animals = [];
   hunters = [];
   dayStep=0; totalBorn=0;
-  const entities = [];
-  for(let i=0;i<NUM_ANIMALS;i++) {
-    let pos = randomPosNoOverlap(entities, ENTITY_SIZE);
-    let animal = new Animal(pos.x, pos.y);
-    animals.push(animal);
-    entities.push(animal);
-  }
-  for(let i=0;i<NUM_HUNTERS;i++) {
-    let pos = randomPosNoOverlap(entities, ENTITY_SIZE);
-    let hunter = new Hunter(pos.x, pos.y);
-    hunters.push(hunter);
-    entities.push(hunter);
-  }
+  for(let i=0;i<NUM_ANIMALS;i++) animals.push(new Animal(randomPos(), randomPos()));
+  for(let i=0;i<NUM_HUNTERS;i++) hunters.push(new Hunter(randomPos(), randomPos()));
   replenishFood(true);
 }
 init();
 
+//==== 更新逻辑 ====
 function update() {
   ticks++;
   dayStep++;
-  const entities = allEntitiesArr();
-  // 行动
-  for(const a of animals) a.act(hunters, foods, entities);
-  for(const h of hunters) h.act(animals, foods, entities);
+  // 行动(取消碰撞箱)
+  for(const a of animals) a.act(hunters, foods);
+  for(const h of hunters) h.act(animals, foods);
 
-  // 吃食物
+  // 蓝生物吃食物
   for(const a of animals) {
     if (!a.alive) continue;
     for (const f of foods) {
-      if (isOverlap(a.x,a.y,f.x,f.y,a.radius,f.radius)) {
+      if (Math.hypot(a.x - f.x, a.y - f.y) < ENTITY_SIZE*1.4) {
         foods = foods.filter(food => food !== f);
         a.energy++; break;
       }
     }
   }
-  // 猎人吃蓝生物或食物
+  // 猎人吃蓝生物或食物，记录是否吃到蓝生物/吃到的食物数
   for(const h of hunters) {
     if (!h.alive) continue;
-    let huntdone = false;
+    h.ateBlue = false;
+    h.ateFood = 0;
+
+    // 检查猎杀蓝生物
     for (const a of animals) {
       if(a.alive && !a.isChild() && Math.hypot(h.x - a.x, h.y - a.y) < HUNTER_ATTACK_DIST){
-        a.alive = false; h.energy += 3; huntdone=true; break;
+        a.alive = false;
+        h.energy += 3; // 吃蓝生物能量+3
+        h.ateBlue = true;
+        break;
       }
     }
-    if (!huntdone) {
+    // 检查吃食物
+    if (!h.ateBlue) {
       for (const f of foods) {
-        if (isOverlap(h.x,h.y,f.x,f.y,h.radius,f.radius-1)) {
+        if (Math.hypot(h.x - f.x, h.y - f.y) < ENTITY_SIZE*1.3) {
           foods = foods.filter(food => food !== f);
-          h.energy+=1; break;
+          h.energy+=1; // 吃食物能量+1
+          h.ateFood++;
+          break;
         }
       }
     }
   }
 
-  // 天数步长结算（只做繁殖/死亡判定，食物刷新移除）
+  // 不等一天刷新，食物吃光就补充
+  if (foods.length === 0) replenishFood(true);
+
+  //--- 每天结束结算 ---
   if (dayStep >= DAY_LENGTH) {
     let newbornAnimals=[], newbornHunters=[];
+    // 蓝生物结算/繁殖
     for (const a of animals) {
       a.age++;
       if (!a.alive) continue;
       a.energy -= a.need;
-      if (a.energy < 0) a.alive = false;
+      if (a.energy < 0) a.alive = false;    // 能量不足死亡
       if (a.energy >= a.born && newbornAnimals.length < 3 && (animals.length+hunters.length)<MAX_TOTAL) {
         a.energy -= BORN_ENERGY_COST;
-        let pos = randomPosNoOverlap(allEntitiesArr(), ENTITY_SIZE);
-        let baby = new Animal(pos.x, pos.y); baby.childAge = 1; newbornAnimals.push(baby);
+        let baby = new Animal(a.x, a.y); baby.childAge = 1; newbornAnimals.push(baby); // 原地生宝宝
       }
-      if (a.isChild()) a.childAge++;
+      if (a.isChild()) a.childAge++; // 宝宝长大
     }
+    // 猎人结算/新逻辑
     for (const h of hunters) {
       h.age++;
-      if (!h.alive) continue;
+      // 天结束先消耗能量
       h.energy -= h.need;
-      if (h.energy < 0) h.alive = false;
-      if (h.energy >= h.born && newbornHunters.length < 1 && (animals.length+hunters.length)<MAX_TOTAL) {
-        h.energy -= BORN_ENERGY_COST + 1;
-        let pos = randomPosNoOverlap(allEntitiesArr(), ENTITY_SIZE);
-        let baby = new Hunter(pos.x, pos.y); baby.childAge = 1; newbornHunters.push(baby);
+      if (!h.alive) continue;
+      // 只吃到食物（没吃蓝生物）
+      if (!h.ateBlue && h.ateFood > 0) {
+        if (h.energy < 0) {
+          h.alive = false;         // 本来能量不够就死
+        } else if (Math.random() < 1/3) {
+          h.alive = false;         // 有1/3概率死掉
+        }
+        // 达到繁殖阈值但没吃蓝生物，1/3概率繁殖
+        if (h.energy >= h.born && Math.random() < 1/3 && (animals.length+hunters.length)<MAX_TOTAL) {
+          h.energy -= BORN_ENERGY_COST + 1;
+          let baby = new Hunter(h.x, h.y); baby.childAge = 1; newbornHunters.push(baby);
+        }
+        if (h.isChild()) h.childAge++;
       }
-      if (h.isChild()) h.childAge++;
+      // 如果吃到蓝生物参与正常繁殖
+      else if (h.ateBlue) {
+        if (h.energy < 0) {
+          h.alive = false;
+        } else if (h.energy >= h.born && newbornHunters.length < 1 && (animals.length+hunters.length)<MAX_TOTAL) {
+          h.energy -= BORN_ENERGY_COST + 1;
+          let baby = new Hunter(h.x, h.y); baby.childAge = 1; newbornHunters.push(baby);
+        }
+        if (h.isChild()) h.childAge++;
+      }
+      // 什么都没吃到（能量不够就死，否则继续活着，不会繁殖，不会额外死亡）
+      else {
+        if (h.energy < 0) h.alive = false;
+        if (h.isChild()) h.childAge++;
+      }
     }
+    // 更新
     animals = animals.filter(a=>a.alive);
     hunters = hunters.filter(h=>h.alive);
     animals = animals.concat(newbornAnimals);
@@ -445,47 +426,47 @@ function update() {
     dayStep = 0;
   }
 
-  // "吃光就补"的食物机制
-  if (foods.length === 0) replenishFood(true);
-
-  // 极端增长时收敛保护
+  // 超量食物裁减
   if(foods.length>FOOD_MAX) foods=foods.slice(0,FOOD_MAX);
 
   animals = animals.filter(a=>a.alive);
   hunters = hunters.filter(h=>h.alive);
 }
 
+//==== 渲染逻辑 ====
 function render() {
   ctx.clearRect(0,0,GRID_SIZE,GRID_SIZE);
   // 食物
   for(const f of foods){
     ctx.beginPath();
-    ctx.arc(f.x, f.y, f.radius, 0, Math.PI*2);
+    ctx.arc(f.x, f.y, ENTITY_SIZE-2, 0, Math.PI*2);
     ctx.fillStyle="#34d399";
     ctx.fill();
     ctx.closePath();
   }
-  // 普通生物
+  // 蓝生物
   for(const a of animals){
-    ctx.save(); ctx.globalAlpha=a.isChild()?0.45:1.0;
+    ctx.save();
+    ctx.globalAlpha=a.isChild()?0.45:1.0;
     ctx.beginPath();
-    ctx.arc(a.x,a.y,a.radius,0,Math.PI*2);
+    ctx.arc(a.x,a.y,ENTITY_SIZE,0,Math.PI*2);
     ctx.fillStyle=a.color();
     ctx.fill();
     ctx.closePath();
     ctx.restore();
   }
-  // 红色猎人
+  // 红猎人
   for(const h of hunters){
-    ctx.save(); ctx.globalAlpha=h.isChild()?0.45:1.0;
+    ctx.save();
+    ctx.globalAlpha=h.isChild()?0.45:1.0;
     ctx.beginPath();
-    ctx.arc(h.x,h.y,h.radius,0,Math.PI*2);
+    ctx.arc(h.x,h.y,ENTITY_SIZE,0,Math.PI*2);
     ctx.fillStyle=h.color();
     ctx.fill();
     ctx.closePath();
     ctx.restore();
   }
-  // 计数
+  // ui
   ctx.font="bold 13px Arial";
   ctx.fillStyle="#facc15";
   ctx.fillText(`天数:${ticks ? Math.floor(ticks/DAY_LENGTH)+1 : 1}`,10,20);
@@ -501,11 +482,11 @@ function render() {
   }
 }
 
-// 永远循环，模拟永不停止（除非手动刷新页面）
+// 永远循环
 function loop() {
   update();
   render();
-  requestAnimationFrame(loop); // 永远运行
+  requestAnimationFrame(loop);
 }
 loop();
             </script>
