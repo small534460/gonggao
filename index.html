@@ -155,10 +155,10 @@
           <a class="card" href="https://small534460.github.io/" target="_blank" rel="noopener noreferrer">
             <div class="title">————好吧，什么也没有————</div>
             <canvas id="lifeCanvas" width="440" height="440" style="border-radius:12px;box-shadow:0 6px 18px rgba(96,165,250,0.12);margin-top:10px;"></canvas>
-            <script>
+<script>
 /**
  * 平衡优化生物生态模拟
- * Small 3 修改/升级版，带详细注释及新功能！
+ * Small 3 版，蓝生物遇墙不再卡死，会尝试带扰动地游离墙角。
  */
 
 //==== 基本参数 ====
@@ -171,8 +171,8 @@ const NUM_ANIMALS = 10;                  // 启动时蓝生物数量
 const NUM_HUNTERS = 2;                   // 启动时红猎人数量
 const FOOD_MAX = 22;                     // 食物最大数量（极端收敛保护）
 const FOOD_REFRESH = 14;                 // 默认刷新到多少个食物
-const FOOD_ALERT = 5;                    // 食物警戒线：当食物数量≤此值时自动刷新，数值可调整
-const MOVE_SPEED = 1.9;                  // 蓝生物移动速度(px/步)
+const FOOD_ALERT = 5;                    // 食物警戒线：≤该数量就刷新
+const MOVE_SPEED = 1.8;                  // 蓝生物移动速度(px/步)
 const HUNTER_SPEED = 1.8;                // 红猎人移动速度(px/步)
 const DAY_LENGTH = 300;                  // 一天步数
 const NORMAL_NEED = 1;                   // 蓝生物一天消耗能量
@@ -181,13 +181,12 @@ const NORMAL_BORN = 5;                   // 蓝生物繁殖能量阈值
 const HUNTER_BORN = 7;                   // 红猎人繁殖能量阈值
 const BORN_ENERGY_COST = 2;              // 繁殖需要消耗能量
 const ANIMAL_VIEW_DIST = 60;             // 蓝生物逃猎视野（px）
-const HUNTER_VIEW_DIST = GRID_SIZE * 2;  // 红猎人视野(全图视野，覆盖地图上所有蓝生物)
+const HUNTER_VIEW_DIST = GRID_SIZE * 2;  // 红猎人视野(全图视野)
 const ESCAPE_FORCE = 3.2;                // 蓝生物逃跑时加速系数
 const HUNTER_ATTACK_DIST = ENTITY_SIZE * 1.7; // 猎人捕杀距离(px)
 const BABY_GUARD_AGE = 1;                // 宝宝保护期(天)
 const MAX_TOTAL = 60;                    // 生物总数上限
 
-//==== 工具函数 ====
 function randomPos() {
   return Math.random() * (GRID_SIZE - 2*ENTITY_SIZE) + ENTITY_SIZE;
 }
@@ -204,20 +203,29 @@ class Animal {
   constructor(x, y) {
     this.x = x;
     this.y = y;
-    this.energy = 2;               // 初始能量
+    this.energy = 2;
     this.type = "normal";
     this.alive = true;
-    this.age = 0;                  // 存活天数
-    this.childAge = 0;             // 宝宝期计数
+    this.age = 0;
+    this.childAge = 0;
+    // 蓝生物加一个逃墙扰动方向，用于撞墙时自动滑行
+    this.escapeAngle = Math.random() * 2 * Math.PI;
   }
   get need() { return NORMAL_NEED; }
   get born() { return NORMAL_BORN; }
   color() { return "#3b82f6"; }
   isChild() { return this.childAge > 0 && this.childAge <= BABY_GUARD_AGE; }
+
   act(hunters, foods) {
     if (!this.alive) return;
     let tx = 0, ty = 0;
-    // 逃最近猎人
+    // 检测是否紧贴边界
+    let nearLeft = this.x <= ENTITY_SIZE + 0.5,
+        nearRight = this.x >= GRID_SIZE - ENTITY_SIZE - 0.5,
+        nearTop = this.y <= ENTITY_SIZE + 0.5,
+        nearBottom = this.y >= GRID_SIZE - ENTITY_SIZE - 0.5;
+
+    // 躲避最近猎人
     let escape = false;
     for (const h of hunters) {
       const d = Math.hypot(h.x - this.x, h.y - this.y);
@@ -227,7 +235,7 @@ class Animal {
         escape = true;
       }
     }
-    // 没猎人则追食物
+    // 若没感到猎人就追远最近食物
     if (!escape) {
       let best = null, bd = 99999;
       for (const f of foods) {
@@ -238,12 +246,40 @@ class Animal {
     } else {
       tx *= ESCAPE_FORCE; ty *= ESCAPE_FORCE;
     }
-    // 移动
-    const norm = Math.max(1, Math.hypot(tx, ty));
-    this.x += MOVE_SPEED * tx / norm;
-    this.y += MOVE_SPEED * ty / norm;
-    this.x = Math.max(ENTITY_SIZE, Math.min(GRID_SIZE-ENTITY_SIZE, this.x));
-    this.y = Math.max(ENTITY_SIZE, Math.min(GRID_SIZE-ENTITY_SIZE, this.y));
+
+    // ---- 墙角泄压核心部分 ----
+    // 检查下回合会不会撞墙。若会，则赋予一个随机扰动方向（只能往内部滑走）
+    let dx = MOVE_SPEED * tx / Math.max(1, Math.hypot(tx, ty));
+    let dy = MOVE_SPEED * ty / Math.max(1, Math.hypot(tx, ty));
+    let nx = this.x + dx;
+    let ny = this.y + dy;
+    let toWall = false;
+    // 如果预判会撞左/右/上/下边，则让动物朝"顺着边滑走"的方向鼓励一点
+    if (nx < ENTITY_SIZE || nx > GRID_SIZE - ENTITY_SIZE || ny < ENTITY_SIZE || ny > GRID_SIZE - ENTITY_SIZE) {
+      toWall = true;
+      // 如果在墙角就朝对角线方向扰动
+      if((nearLeft||nearRight) && (nearTop||nearBottom)){
+        this.escapeAngle += (Math.random()-0.5)*Math.PI; // 方向轻微扰动
+        dx = Math.cos(this.escapeAngle) * MOVE_SPEED;
+        dy = Math.sin(this.escapeAngle) * MOVE_SPEED;
+      } 
+      // 如果挨着左或右墙面
+      else if(nearLeft || nearRight){
+        dy += (Math.random() - 0.5)*MOVE_SPEED*1.2; // 沿墙上下轻微扰动
+        dx = nearLeft ? Math.abs(dx) : -Math.abs(dx); // 强行让它向内
+      }
+      // 如果挨着上或下墙面
+      else if(nearTop || nearBottom) {
+        dx += (Math.random() - 0.5)*MOVE_SPEED*1.2; // 沿墙左右轻微扰动
+        dy = nearTop ? Math.abs(dy) : -Math.abs(dy); // 强行让它向内
+      }
+    }
+    // 重新计算目标位置
+    nx = this.x + dx;
+    ny = this.y + dy;
+    // 限制边界
+    this.x = Math.max(ENTITY_SIZE, Math.min(GRID_SIZE-ENTITY_SIZE, nx));
+    this.y = Math.max(ENTITY_SIZE, Math.min(GRID_SIZE-ENTITY_SIZE, ny));
   }
 }
 
@@ -251,14 +287,13 @@ class Hunter {
   constructor(x, y) {
     this.x = x;
     this.y = y;
-    this.energy = 3;               // 初始能量
+    this.energy = 3;
     this.type = "hunter";
     this.alive = true;
     this.age = 0;
     this.childAge = 0;
-    // 新增一天的记录
-    this.ateBlue = false;          // 今天是否吃到蓝生物
-    this.ateFood = 0;              // 今天吃到的食物数量
+    this.ateBlue = false;
+    this.ateFood = 0;
   }
   get need() { return HUNTER_NEED; }
   get born() { return HUNTER_BORN; }
@@ -266,7 +301,6 @@ class Hunter {
   isChild() { return this.childAge > 0 && this.childAge <= BABY_GUARD_AGE; }
   act(animals, foods) {
     if (!this.alive) return;
-    // 追全图内最近蓝生物（视野覆盖全地图）
     let best = null, bd = 99999;
     for (const a of animals) {
       if (a.alive && !a.isChild()) {
@@ -279,7 +313,6 @@ class Hunter {
       this.x += HUNTER_SPEED * dx / norm;
       this.y += HUNTER_SPEED * dy / norm;
     } else {
-      // 改为追食物（如果没蓝生物）
       let fbest = null, fd = 99999;
       for (const f of foods) {
         const d = Math.hypot(f.x - this.x, f.y - this.y);
@@ -300,11 +333,6 @@ class Hunter {
 let foods=[], animals=[], hunters=[];
 let dayStep=0, ticks=0, totalBorn = 0;
 
-/**
- * 补充食物：
- * 当食物数量≤FOOD_ALERT（警戒线）或force为true时，将食物数量补到FOOD_REFRESH
- * 警戒线可根据需要调整，使生态更加平稳
- */
 function replenishFood(force=false) {
   if (foods.length <= FOOD_ALERT || force) {
     let need = FOOD_REFRESH - foods.length;
@@ -314,10 +342,6 @@ function replenishFood(force=false) {
   }
 }
 
-/**
- * 初始化生态系统
- * 包括蓝生物、红猎人和初始食物
- */
 function init() {
   foods = [];
   animals = [];
@@ -325,16 +349,13 @@ function init() {
   dayStep=0; totalBorn=0;
   for(let i=0;i<NUM_ANIMALS;i++) animals.push(new Animal(randomPos(), randomPos()));
   for(let i=0;i<NUM_HUNTERS;i++) hunters.push(new Hunter(randomPos(), randomPos()));
-  replenishFood(true); // 初始化时强制补满食物
+  replenishFood(true);
 }
 init();
 
-//==== 更新逻辑 ====
 function update() {
   ticks++;
   dayStep++;
-
-  // 生物移动（不需要碰撞箱，全部可重合）
   for(const a of animals) a.act(hunters, foods);
   for(const h of hunters) h.act(animals, foods);
 
@@ -348,74 +369,64 @@ function update() {
       }
     }
   }
-
-  // 猎人吃蓝生物和食物，记录吃到的类型和数量
+  // 猎人吃蓝生物/食物，记录类型和数量
   for(const h of hunters) {
     if (!h.alive) continue;
     h.ateBlue = false;
     h.ateFood = 0;
-
-    // 猎人吃蓝生物
     for (const a of animals) {
       if(a.alive && !a.isChild() && Math.hypot(h.x - a.x, h.y - a.y) < HUNTER_ATTACK_DIST){
         a.alive = false;
-        h.energy += 3; // 吃蓝生物能量+3
+        h.energy += 3;
         h.ateBlue = true;
         break;
       }
     }
-    // 猎人吃食物（没吃到蓝生物情况下）
     if (!h.ateBlue) {
       for (const f of foods) {
         if (Math.hypot(h.x - f.x, h.y - f.y) < ENTITY_SIZE*1.3) {
           foods = foods.filter(food => food !== f);
-          h.energy+=1; // 吃食物能量+1
+          h.energy+=1;
           h.ateFood++;
           break;
         }
       }
     }
   }
-
-  // === 新机制：食物数量低于警戒线自动刷新 ===
+  // 食物少时刷新
   replenishFood();
 
-  //--- 每天结束结算 ---
+  // 天结束结算
   if (dayStep >= DAY_LENGTH) {
     let newbornAnimals=[], newbornHunters=[];
-    // 蓝生物死亡、繁殖、宝宝成长
     for (const a of animals) {
       a.age++;
       if (!a.alive) continue;
       a.energy -= a.need;
-      if (a.energy < 0) a.alive = false;    // 能量不足死亡
+      if (a.energy < 0) a.alive = false;
       if (a.energy >= a.born && newbornAnimals.length < 3 && (animals.length+hunters.length)<MAX_TOTAL) {
         a.energy -= BORN_ENERGY_COST;
-        let baby = new Animal(a.x, a.y); baby.childAge = 1; newbornAnimals.push(baby); // 原地生宝宝
+        let baby = new Animal(a.x, a.y); baby.childAge = 1; newbornAnimals.push(baby);
       }
-      if (a.isChild()) a.childAge++; // 宝宝长大
+      if (a.isChild()) a.childAge++;
     }
-    // 红猎人判定增添新逻辑
+    // 红猎人死亡/繁殖/宝宝成长
     for (const h of hunters) {
       h.age++;
-      // 天结束先消耗能量
       h.energy -= h.need;
       if (!h.alive) continue;
-      // 只吃到食物（没吃蓝生物）
       if (!h.ateBlue && h.ateFood > 0) {
         if (h.energy < 0) {
-          h.alive = false;         // 本来能量不够就死
+          h.alive = false;
         } else if (Math.random() < 1/3) {
-          h.alive = false;         // 有1/3概率死掉
+          h.alive = false;
         }
-        // 达到繁殖阈值但没吃蓝生物，1/3概率繁殖
         if (h.energy >= h.born && Math.random() < 1/3 && (animals.length+hunters.length)<MAX_TOTAL) {
           h.energy -= BORN_ENERGY_COST + 1;
           let baby = new Hunter(h.x, h.y); baby.childAge = 1; newbornHunters.push(baby);
         }
         if (h.isChild()) h.childAge++;
       }
-      // 如果吃到蓝生物参与正常繁殖
       else if (h.ateBlue) {
         if (h.energy < 0) {
           h.alive = false;
@@ -425,31 +436,24 @@ function update() {
         }
         if (h.isChild()) h.childAge++;
       }
-      // 什么都没吃到（能量不够就死，否则继续活着，不会繁殖，不会额外死亡）
       else {
         if (h.energy < 0) h.alive = false;
         if (h.isChild()) h.childAge++;
       }
     }
-    // 更新生物与猎人数量
     animals = animals.filter(a=>a.alive);
     hunters = hunters.filter(h=>h.alive);
     animals = animals.concat(newbornAnimals);
     hunters = hunters.concat(newbornHunters);
     dayStep = 0;
   }
-
-  // 超量食物裁减
   if(foods.length>FOOD_MAX) foods=foods.slice(0,FOOD_MAX);
-
   animals = animals.filter(a=>a.alive);
   hunters = hunters.filter(h=>h.alive);
 }
 
-//==== 渲染逻辑 ====
 function render() {
   ctx.clearRect(0,0,GRID_SIZE,GRID_SIZE);
-  // 食物
   for(const f of foods){
     ctx.beginPath();
     ctx.arc(f.x, f.y, ENTITY_SIZE-2, 0, Math.PI*2);
@@ -457,7 +461,6 @@ function render() {
     ctx.fill();
     ctx.closePath();
   }
-  // 蓝生物
   for(const a of animals){
     ctx.save();
     ctx.globalAlpha=a.isChild()?0.45:1.0;
@@ -468,7 +471,6 @@ function render() {
     ctx.closePath();
     ctx.restore();
   }
-  // 红猎人
   for(const h of hunters){
     ctx.save();
     ctx.globalAlpha=h.isChild()?0.45:1.0;
@@ -479,7 +481,6 @@ function render() {
     ctx.closePath();
     ctx.restore();
   }
-  // ui
   ctx.font="bold 13px Arial";
   ctx.fillStyle="#facc15";
   ctx.fillText(`天数:${ticks ? Math.floor(ticks/DAY_LENGTH)+1 : 1}`,10,20);
@@ -495,14 +496,13 @@ function render() {
   }
 }
 
-// 永远循环
 function loop() {
   update();
   render();
   requestAnimationFrame(loop);
 }
 loop();
-            </script>
+</script>
           </a>
         </li>
       </ul>
