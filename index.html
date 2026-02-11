@@ -3,427 +3,521 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>不是公告</title>
+  <title>公告</title>
   <style>
     :root{
       --accent: #60a5fa;
       --accent-2: #3b82f6;
-      --muted: rgba(230,238,248,0.7);
+      --muted: rgba(230,238,248,0.6);
       --glass: rgba(255,255,255,0.02);
       --radius: 12px;
     }
-
-    html, body { min-height: 100vh; background: #141e2d; }
+    html, body { height: 100%; }
     body{
       margin: 0;
-      padding: 0;
+      background:
+        linear-gradient(180deg, rgba(7,16,38,0.6) 0%, rgba(7,16,38,0.6) 100%),
+        url('https://free.boltp.com/2026/01/17/696b9e7124a9e.webp') center/cover no-repeat fixed;
+      color: #e6eef8;
       display: flex;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      color: #e6eef8;
-      background:
-        linear-gradient(180deg, rgba(7,16,38,0.8) 0%, rgba(7,16,38,0.8) 100%),
-        url('https://free.boltp.com/2026/01/17/696b9e7124a9e.webp') center/cover no-repeat fixed;
+      padding: 32px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      line-height: 1.6;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
     }
     .wrap{
-      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      width: 100%;
+      max-width: 880px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
       border-radius: var(--radius);
-      padding: 32px 22px;
-      box-shadow: 0 8px 30px rgba(2,6,23,0.28), inset 0 1px 0 rgba(255,255,255,0.02);
-      border: 1px solid rgba(255,255,255,0.07);
+      padding: 28px;
+      box-shadow: 0 8px 30px rgba(2,6,23,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.03);
       backdrop-filter: blur(6px);
-      max-width: 540px;
-      margin: auto;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
     }
-    h1 {
-      font-size: 22px;
-      font-weight: bold;
-      margin: 0 0 10px 0;
-      color: #91c2ff;
+    header{
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+    .logo{
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 20px;
+      color: white;
+      box-shadow: 0 6px 18px rgba(96,165,250,0.12);
+      flex: 0 0 64px;
+    }
+    h1{
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: 0.6px;
     }
     .subtitle{
-      margin-bottom: 16px;
+      margin: 6px 0 0 0;
       color: var(--muted);
-      font-size: 14px;
-      font-weight: normal;
-      text-align: center;
+      font-size: 13px;
     }
-    .game-block {
-      margin: 18px 0 0 0;
-      padding: 22px 12px;
-      background: rgba(15,23,42,0.18);
+    .content{
+      margin-top: 18px;
+    }
+    .intro{
+      background: var(--glass);
+      padding: 12px 14px;
       border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(96,165,250,0.10);
+      color: #dceafc;
+      font-size: 15px;
+      margin-bottom: 16px;
+    }
+    .links{
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+    .links a{
+      text-decoration: none;
+      color: inherit;
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.01));
+      border-radius: 10px;
+      padding: 12px;
+      border: 1px solid rgba(255,255,255,0.02);
+      transition: transform .16s ease, box-shadow .16s ease;
       display: flex;
       flex-direction: column;
-      align-items: center;
+      gap: 8px;
     }
-    #lifeCanvas {
-      display: block;
-      margin: 12px auto 6px auto;
-      border-radius: 12px;
-      border: 1px solid var(--accent);
-      background: rgba(14,22,38, 0.12);
-      box-shadow: 0 2px 12px rgba(96,165,250,0.08);
+    .card:hover{
+      transform: translateY(-6px);
+      box-shadow: 0 14px 40px rgba(2,6,23,0.6);
     }
-    .info {
+    .card .title{
+      font-weight: 600;
+      color: #f3f9ff;
+      font-size: 15px;
+    }
+    .card .desc{
       font-size: 13px;
-      color: #a2b7d7;
-      margin-bottom: 10px;
+      color: var(--muted);
     }
-    #restartBtn {
-      display: none;
-      margin-top: 10px;
-      padding: 6px 20px;
-      border: none;
-      border-radius: 6px;
-      background: var(--accent);
-      color: #fff;
-      font-size: 14px;
-      cursor: pointer;
-      box-shadow: 0 2px 6px rgba(96,165,250,0.18);
-      transition: background .2s;
+    footer{
+      margin-top: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 13px;
     }
-    #restartBtn:hover {
-      background: var(--accent-2);
+    .small{
+      color: var(--muted);
+      font-size: 13px;
     }
-    @media (max-width: 560px) {
-      .wrap { padding: 14px 3px; max-width: 99vw; }
+    @media (max-width:520px){
+      .logo{width:52px;height:52px;font-size:18px;}
+      .wrap{padding:18px;}
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>不是-公告</h1>
-    <div class="subtitle">这里存放公告，可是没有公告，你要投稿吗？</div>
-    <div class="game-block">
-      <!-- 生态模拟游戏主要区域 -->
-      <canvas id="lifeCanvas" width="440" height="440"></canvas>
-      <div class="info">绿色=食物，蓝色=普通生物，红色=猎人生物。可以点击“重新开始”按钮重置模拟。</div>
-      <button id="restartBtn">重新开始</button>
-    </div>
-  </div>
-  <script>
-  // ========= 参数区（可随时调节） =========
-  const GRID_SIZE = 440;           // 游戏区域大小（像素）
-  const ENTITY_SIZE = 7;           // 生物实体半径（像素）
-  const NUM_ANIMALS = 12;          // 初始蓝生物数
-  const NUM_HUNTERS = 4;           // 初始红猎人数
-  const FOOD_MAX = 27;             // 最大食物数
-  const FOOD_REFRESH = 15;         // 食物补充下限
-  const DAY_LENGTH = 320;          // 一天步数
-  const ANIMAL_SPEED = 2.7;        // 蓝生物速度
-  const ANIMAL_VIEW_DIST = 90;     // 蓝生物警觉范围
-  const ANIMAL_DISPERSE_DIST = 18; // 蓝生物分散距离
-  const ANIMAL_DISPERSE_FORCE = 3.3;// 分散推力
-  const ANIMAL_ESCAPE_FACTOR = 1.7; // 饥饿逃猎加速
-  const HUNTER_SPEED = 2.7;        // 红猎人速度
-  const HUNTER_VIEW_DIST = 85;     // 红猎人视野
-  const HUNTER_ATTACK_DIST = ENTITY_SIZE * 1.7; // 猎人捕猎距离
-  const BABY_GUARD_AGE = 1;        // 新生保护天数
-  const MAX_TOTAL = 60;            // 总生物数上限
-  const NORMAL_NEED = 1;           // 蓝生物每天能量消耗
-  const NORMAL_BORN = 5;           // 蓝生物繁殖能量阈值
-  const HUNTER_NEED_BLUE = 1;      // 猎人每天猎蓝生物需求
-  const HUNTER_NEED_FOOD = 1;      // 猎人每天食物需求
-  const HUNTER_BORN_BLUE = 1;      // 猎人生殖需蓝生物猎杀数
-  const HUNTER_BORN_FOOD = 2;      // 猎人生殖需食物数
-  const BORN_ENERGY_COST = 2;      // 蓝生物繁殖能量消耗
+  <main class="wrap" role="main">
+    <header>
+      <div class="logo">S3</div>
+      <div>
+        <h1>Small 3 的个人领域</h1>
+        <div class="subtitle">公告</div>
+      </div>
+    </header>
 
-  // ========= 游戏数据结构 =========
-  function randomPos() {
-    return Math.random() * (GRID_SIZE - 2*ENTITY_SIZE) + ENTITY_SIZE;
-  }
-  class Food {
-    constructor(x, y) {
-      this.x = x;
-      this.y = y;
-    }
-  }
-  class Animal {
-    constructor(x, y) {
-      this.x = x;
-      this.y = y;
-      this.energy = 2;
-      this.type = "normal";
-      this.alive = true;
-      this.age = 0;
-      this.childAge = 0;
-    }
-    get need() { return NORMAL_NEED; }
-    get born() { return NORMAL_BORN; }
-    color() { return "#3b82f6"; }
-    isChild() { return this.childAge > 0 && this.childAge <= BABY_GUARD_AGE; }
-    act(hunters, foods, animals) {
-      if (!this.alive) return;
-      let tx = 0, ty = 0;
-      // 找最近猎人
-      let escape = false;
-      let nearestHunter = null, minHd = 9999;
-      for (const h of hunters) {
-        const d = Math.hypot(h.x - this.x, h.y - this.y);
-        if (d < minHd) { minHd = d; nearestHunter = h; }
-        if (d < ANIMAL_VIEW_DIST) {
-          tx -= (h.x - this.x) * (ANIMAL_VIEW_DIST-d)/ANIMAL_VIEW_DIST;
-          ty -= (h.y - this.y) * (ANIMAL_VIEW_DIST-d)/ANIMAL_VIEW_DIST;
-          escape = true;
-        }
-      }
-      // 分散同类
-      for (const a of animals) {
-        if (!a.alive || a === this) continue;
-        const d = Math.hypot(a.x - this.x, a.y - this.y);
-        if (d < ANIMAL_DISPERSE_DIST) {
-          tx -= (a.x - this.x) * ANIMAL_DISPERSE_FORCE / d;
-          ty -= (a.y - this.y) * ANIMAL_DISPERSE_FORCE / d;
-        }
-      }
-      // 食物追踪
-      if (!escape && foods.length > 0) {
-        let best = null, bd = 99999;
-        for (const f of foods) {
-          const d = Math.hypot(f.x - this.x, f.y - this.y);
-          if (d < bd) { bd = d; best = f; }
-        }
-        if (best) { tx += (best.x - this.x); ty += (best.y - this.y);}
-      }
-      // 饥饿时逃离最近猎人
-      if ((!escape && foods.length === 0 && hunters.length > 0)) {
-        tx = -(nearestHunter.x - this.x) * ANIMAL_ESCAPE_FACTOR;
-        ty = -(nearestHunter.y - this.y) * ANIMAL_ESCAPE_FACTOR;
-      }
-      // 若无食物及无猎人，则微弱随机游动
-      if (tx === 0 && ty === 0) {
-        const angle = Math.random() * 2 * Math.PI;
-        tx = Math.cos(angle);
-        ty = Math.sin(angle);
-      }
-      // 移动及边界保护
-      const norm = Math.max(1, Math.hypot(tx, ty));
-      this.x += ANIMAL_SPEED * tx / norm;
-      this.y += ANIMAL_SPEED * ty / norm;
-      this.x = Math.max(ENTITY_SIZE, Math.min(GRID_SIZE-ENTITY_SIZE, this.x));
-      this.y = Math.max(ENTITY_SIZE, Math.min(GRID_SIZE-ENTITY_SIZE, this.y));
-    }
-  }
-  class Hunter {
-    constructor(x, y) {
-      this.x = x;
-      this.y = y;
-      this.type = "hunter";
-      this.alive = true;
-      this.age = 0;
-      this.childAge = 0;
-      this.huntCount = 0;
-      this.foodCount = 0;
-    }
-    color() { return "#ef4444"; }
-    isChild() { return this.childAge > 0 && this.childAge <= BABY_GUARD_AGE; }
-    act(animals, foods) {
-      if (!this.alive) return;
-      // 有食物优先追食物
-      if (foods.length > 0) {
-        let fbest = null, fd = 99999;
-        for (const f of foods) {
-          const d = Math.hypot(f.x - this.x, f.y - this.y);
-          if (d < fd) { fd = d; fbest = f;}
-        }
-        if (fbest) {
-          const dx = fbest.x - this.x, dy = fbest.y - this.y, norm = Math.max(1, Math.hypot(dx, dy));
-          this.x += HUNTER_SPEED * dx / norm;
-          this.y += HUNTER_SPEED * dy / norm;
-        }
-      } else {
-        // 追最近蓝生物
-        let best = null, bd = 99999;
-        for (const a of animals) {
-          if (a.alive && !a.isChild()) {
-            const d = Math.hypot(a.x - this.x, a.y - this.y);
-            if (d < bd && d < HUNTER_VIEW_DIST) { bd = d; best = a; }
-          }
-        }
-        if (best) {
-          const dx = best.x - this.x, dy = best.y - this.y, norm = Math.max(1, Math.hypot(dx, dy));
-          this.x += HUNTER_SPEED * dx / norm;
-          this.y += HUNTER_SPEED * dy / norm;
-        } else {
-          // 无蓝生物随机游动
-          const angle = Math.random() * 2 * Math.PI;
-          this.x += Math.cos(angle);
-          this.y += Math.sin(angle);
-        }
-      }
-      this.x = Math.max(ENTITY_SIZE, Math.min(GRID_SIZE-ENTITY_SIZE, this.x));
-      this.y = Math.max(ENTITY_SIZE, Math.min(GRID_SIZE-ENTITY_SIZE, this.y));
-    }
-  }
+    <section class="content">
+      <div class="intro">
+        我是 Small 3，这是我的个人领域。这里存放公告。
+      </div>
 
-  let foods=[], animals=[], hunters=[];
-  let ticks=0, dayStep=0, isGameOver=false;
-  const ctx = document.getElementById('lifeCanvas').getContext('2d');
-  const restartBtn = document.getElementById('restartBtn');
+      <h2 style="margin:0 0 10px 0;font-size:14px;color:var(--muted)">—— 公告 ——</h2>
 
-  function replenishFood() {
-    while (foods.length < FOOD_REFRESH) {
-      foods.push(new Food(randomPos(), randomPos()));
+      <ul class="links" aria-label="公告">
+        <li>
+          <a class="card" href="https://small534460.github.io/" target="_blank" rel="noopener noreferrer">
+            <div class="title">————好吧，什么也没有————</div>
+            <canvas id="lifeCanvas" width="440" height="440" style="border-radius:12px;box-shadow:0 6px 18px rgba(96,165,250,0.12);margin-top:10px;"></canvas>
+            <script>
+// --- 生态系统模拟器，满足你的三大需求 ---
+
+const canvas = document.getElementById('lifeCanvas');
+const ctx = canvas.getContext('2d');
+
+const GRID_SIZE = 440;
+const ENTITY_SIZE = 7;
+const NUM_ANIMALS = 10;
+const NUM_HUNTERS = 2;
+const FOOD_MAX = 22;
+const FOOD_REFRESH = 14;
+const MOVE_SPEED = 1.8;
+const HUNTER_SPEED = 2.2;
+const DAY_LENGTH = 300;
+const NORMAL_NEED = 1;
+const HUNTER_NEED = 2;
+const NORMAL_BORN = 5;
+const HUNTER_BORN = 7;
+const BORN_ENERGY_COST = 2;
+const ANIMAL_VIEW_DIST = 60;
+const HUNTER_VIEW_DIST = 85;
+const ESCAPE_FORCE = 3.2;
+const HUNTER_ATTACK_DIST = ENTITY_SIZE * 1.7;
+const BABY_GUARD_AGE = 1;
+const MAX_TOTAL = 60;
+
+// 检查两个实体是否重叠
+function isOverlap(x1, y1, x2, y2, radius1 = ENTITY_SIZE, radius2 = ENTITY_SIZE) {
+  return Math.hypot(x1 - x2, y1 - y2) < (radius1 + radius2);
+}
+
+// 在所有现有实体上随机生成，不重叠（有最大尝试限制，避免死循环）
+function randomPosNoOverlap(others, radius = ENTITY_SIZE, maxTries = 80) {
+  for (let t = 0; t < maxTries; ++t) {
+    const x = Math.random() * (GRID_SIZE - 2 * radius) + radius;
+    const y = Math.random() * (GRID_SIZE - 2 * radius) + radius;
+    let ok = true;
+    for (const o of others) {
+      const r2 = o.radius || ENTITY_SIZE;
+      if (isOverlap(x, y, o.x, o.y, radius, r2)) { ok = false; break; }
     }
+    if (ok) return { x, y };
   }
-  function init() {
-    foods = [];
-    animals = [];
-    hunters = [];
-    ticks=0; dayStep=0; isGameOver=false;
-    restartBtn.style.display = "none";
-    for(let i=0;i<NUM_ANIMALS;i++) animals.push(new Animal(randomPos(), randomPos()));
-    for(let i=0;i<NUM_HUNTERS;i++) hunters.push(new Hunter(randomPos(), randomPos()));
-    replenishFood();
+  // 失败则随机一个位置
+  return {
+    x: Math.random() * (GRID_SIZE - 2 * radius) + radius,
+    y: Math.random() * (GRID_SIZE - 2 * radius) + radius
+  };
+}
+
+class Food {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.radius = ENTITY_SIZE-2;
   }
-  init();
+}
 
-  function update() {
-    if(isGameOver) return;
-    ticks++; dayStep++;
-    // 生物行动
-    for(const a of animals) a.act(hunters, foods, animals);
-    for(const h of hunters) h.act(animals, foods);
-
-    // 蓝生物吃食物
-    for(const a of animals) {
-      if (!a.alive) continue;
+class Animal {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.energy = 2;
+    this.type = "normal";
+    this.alive = true;
+    this.age = 0;
+    this.childAge = 0;
+    this.radius = ENTITY_SIZE;
+  }
+  get need() { return NORMAL_NEED; }
+  get born() { return NORMAL_BORN; }
+  color() { return "#3b82f6"; }
+  isChild() { return this.childAge > 0 && this.childAge <= BABY_GUARD_AGE; }
+  act(hunters, foods, allEntities) {
+    if (!this.alive) return;
+    let tx = 0, ty = 0;
+    let escape = false;
+    for (const h of hunters) {
+      const d = Math.hypot(h.x - this.x, h.y - this.y);
+      if (d < ANIMAL_VIEW_DIST) {
+        tx -= (h.x - this.x);
+        ty -= (h.y - this.y);
+        escape = true;
+      }
+    }
+    if (!escape) {
+      let best = null, bd = 99999;
       for (const f of foods) {
-        if (Math.hypot(a.x - f.x, a.y - f.y) < ENTITY_SIZE*1.3) {
-          foods = foods.filter(food => food !== f); a.energy++;
-          break;
-        }
+        const d = Math.hypot(f.x - this.x, f.y - this.y);
+        if (d < bd) { bd = d; best = f; }
+      }
+      if (best) { tx += (best.x - this.x); ty += (best.y - this.y);}
+    } else {
+      tx *= ESCAPE_FORCE; ty *= ESCAPE_FORCE;
+    }
+    const norm = Math.max(1, Math.hypot(tx, ty));
+    let nx = this.x + MOVE_SPEED * tx / norm;
+    let ny = this.y + MOVE_SPEED * ty / norm;
+    // 边界限制
+    nx = Math.max(ENTITY_SIZE, Math.min(GRID_SIZE-ENTITY_SIZE, nx));
+    ny = Math.max(ENTITY_SIZE, Math.min(GRID_SIZE-ENTITY_SIZE, ny));
+    // 碰撞避免
+    for (const o of allEntities) {
+      if (o === this) continue;
+      if (isOverlap(nx, ny, o.x, o.y, this.radius, o.radius)) {
+        // 被卡住则原地不动
+        return;
       }
     }
-    // 猎人捕食蓝生物或吃食物
-    for(const h of hunters) {
-      if (!h.alive) continue;
-      let huntdone = false;
-      for (const a of animals) {
-        if(a.alive && !a.isChild() && Math.hypot(h.x - a.x, h.y - a.y) < HUNTER_ATTACK_DIST){
-          a.alive = false; h.huntCount++; huntdone = true; break;
-        }
-      }
-      if (!huntdone) {
-        for (const f of foods) {
-          if (Math.hypot(h.x - f.x, h.y - f.y) < ENTITY_SIZE*1.1) {
-            foods = foods.filter(food => food !== f);
-            h.foodCount++; break;
-          }
-        }
-      }
-    }
+    this.x = nx;
+    this.y = ny;
+  }
+}
 
-    // 一天结算
-    if (dayStep >= DAY_LENGTH) {
-      let newbornAnimals=[], newbornHunters=[];
-      for (const a of animals) {
-        a.age++;
-        if (!a.alive) continue;
-        a.energy -= a.need;
-        if (a.energy < 0) a.alive = false;
-        if (a.energy >= a.born && newbornAnimals.length < 4 && (animals.length+hunters.length)<MAX_TOTAL) {
-          a.energy -= BORN_ENERGY_COST;
-          let baby = new Animal(a.x, a.y); baby.childAge = 1;
-          newbornAnimals.push(baby);
-        }
-        if (a.isChild()) a.childAge++;
+class Hunter {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.energy = 3;
+    this.type = "hunter";
+    this.alive = true;
+    this.age = 0;
+    this.childAge = 0;
+    this.radius = ENTITY_SIZE;
+  }
+  get need() { return HUNTER_NEED; }
+  get born() { return HUNTER_BORN; }
+  color() { return "#ef4444"; }
+  isChild() { return this.childAge > 0 && this.childAge <= BABY_GUARD_AGE; }
+  act(animals, foods, allEntities) {
+    if (!this.alive) return;
+    let best = null, bd = 99999;
+    for (const a of animals) {
+      if (a.alive && !a.isChild()) {
+        const d = Math.hypot(a.x - this.x, a.y - this.y);
+        if (d < bd && d < HUNTER_VIEW_DIST) { bd = d; best = a; }
       }
-      for (const h of hunters) {
-        h.age++;
-        let survive = (h.huntCount>=HUNTER_NEED_BLUE && h.foodCount>=HUNTER_NEED_FOOD);
-        if (!survive) h.alive = false;
-        if (h.huntCount>=HUNTER_BORN_BLUE && h.foodCount>=HUNTER_BORN_FOOD && newbornHunters.length<1 && (animals.length+hunters.length)<MAX_TOTAL) {
-          let baby = new Hunter(h.x, h.y); baby.childAge = 1;
-          newbornHunters.push(baby);
-          h.huntCount -= HUNTER_BORN_BLUE; h.foodCount -= HUNTER_BORN_FOOD;
-        }
-        if (h.isChild()) h.childAge++;
-        h.huntCount = 0; h.foodCount = 0;
-      }
-      animals = animals.filter(a=>a.alive);
-      hunters = hunters.filter(h=>h.alive);
-      animals = animals.concat(newbornAnimals);
-      hunters = hunters.concat(newbornHunters);
-      replenishFood();
-      dayStep = 0;
     }
-    if(foods.length>FOOD_MAX) foods=foods.slice(0,FOOD_MAX);
+    let nx, ny;
+    if (best) {
+      const dx = best.x - this.x, dy = best.y - this.y, norm = Math.max(1, Math.hypot(dx, dy));
+      nx = this.x + HUNTER_SPEED * dx / norm;
+      ny = this.y + HUNTER_SPEED * dy / norm;
+    } else {
+      let fbest = null, fd = 99999;
+      for (const f of foods) {
+        const d = Math.hypot(f.x - this.x, f.y - this.y);
+        if (d < fd) { fd = d; fbest = f;}
+      }
+      if (fbest) {
+        const dx = fbest.x - this.x, dy = fbest.y - this.y, norm = Math.max(1, Math.hypot(dx, dy));
+        nx = this.x + HUNTER_SPEED * dx / norm;
+        ny = this.y + HUNTER_SPEED * dy / norm;
+      } else {
+        nx = this.x; ny = this.y;
+      }
+    }
+    nx = Math.max(ENTITY_SIZE, Math.min(GRID_SIZE-ENTITY_SIZE, nx));
+    ny = Math.max(ENTITY_SIZE, Math.min(GRID_SIZE-ENTITY_SIZE, ny));
+    // 碰撞避免
+    for (const o of allEntities) {
+      if (o === this) continue;
+      if (isOverlap(nx, ny, o.x, o.y, this.radius, o.radius)) {
+        // 被卡住则原地不动
+        return;
+      }
+    }
+    this.x = nx;
+    this.y = ny;
+  }
+}
+
+// 主体数据
+let foods=[], animals=[], hunters=[];
+let dayStep=0, ticks=0, totalBorn = 0;
+
+function allEntitiesArr() {
+  // 不包括已经死亡的动物和猎人
+  return foods.concat(animals.filter(a=>a.alive)).concat(hunters.filter(h=>h.alive));
+}
+
+// 食物刷新机制
+function replenishFood(force=false) {
+  let need = FOOD_REFRESH - foods.length;
+  if (need<=0 && !force) return;
+  // 如果没有食物则补到FOOD_REFRESH；启动时也补满
+  const entities = allEntitiesArr();
+  for(let i=0;i<need || (force && foods.length === 0) ;i++){
+    // 检查不与已有实体重叠
+    let pos = randomPosNoOverlap(entities.concat(foods), ENTITY_SIZE-2);
+    let food = new Food(pos.x, pos.y);
+    foods.push(food);
+    entities.push(food);
+  }
+}
+
+function init() {
+  foods = [];
+  animals = [];
+  hunters = [];
+  dayStep=0; totalBorn=0;
+  const entities = [];
+  for(let i=0;i<NUM_ANIMALS;i++) {
+    let pos = randomPosNoOverlap(entities, ENTITY_SIZE);
+    let animal = new Animal(pos.x, pos.y);
+    animals.push(animal);
+    entities.push(animal);
+  }
+  for(let i=0;i<NUM_HUNTERS;i++) {
+    let pos = randomPosNoOverlap(entities, ENTITY_SIZE);
+    let hunter = new Hunter(pos.x, pos.y);
+    hunters.push(hunter);
+    entities.push(hunter);
+  }
+  replenishFood(true);
+}
+init();
+
+function update() {
+  ticks++;
+  dayStep++;
+  const entities = allEntitiesArr();
+  // 行动
+  for(const a of animals) a.act(hunters, foods, entities);
+  for(const h of hunters) h.act(animals, foods, entities);
+
+  // 吃食物
+  for(const a of animals) {
+    if (!a.alive) continue;
+    for (const f of foods) {
+      if (isOverlap(a.x,a.y,f.x,f.y,a.radius,f.radius)) {
+        foods = foods.filter(food => food !== f);
+        a.energy++; break;
+      }
+    }
+  }
+  // 猎人吃蓝生物或食物
+  for(const h of hunters) {
+    if (!h.alive) continue;
+    let huntdone = false;
+    for (const a of animals) {
+      if(a.alive && !a.isChild() && Math.hypot(h.x - a.x, h.y - a.y) < HUNTER_ATTACK_DIST){
+        a.alive = false; h.energy += 3; huntdone=true; break;
+      }
+    }
+    if (!huntdone) {
+      for (const f of foods) {
+        if (isOverlap(h.x,h.y,f.x,f.y,h.radius,f.radius-1)) {
+          foods = foods.filter(food => food !== f);
+          h.energy+=1; break;
+        }
+      }
+    }
+  }
+
+  // 天数步长结算（只做繁殖/死亡判定，食物刷新移除）
+  if (dayStep >= DAY_LENGTH) {
+    let newbornAnimals=[], newbornHunters=[];
+    for (const a of animals) {
+      a.age++;
+      if (!a.alive) continue;
+      a.energy -= a.need;
+      if (a.energy < 0) a.alive = false;
+      if (a.energy >= a.born && newbornAnimals.length < 3 && (animals.length+hunters.length)<MAX_TOTAL) {
+        a.energy -= BORN_ENERGY_COST;
+        let pos = randomPosNoOverlap(allEntitiesArr(), ENTITY_SIZE);
+        let baby = new Animal(pos.x, pos.y); baby.childAge = 1; newbornAnimals.push(baby);
+      }
+      if (a.isChild()) a.childAge++;
+    }
+    for (const h of hunters) {
+      h.age++;
+      if (!h.alive) continue;
+      h.energy -= h.need;
+      if (h.energy < 0) h.alive = false;
+      if (h.energy >= h.born && newbornHunters.length < 1 && (animals.length+hunters.length)<MAX_TOTAL) {
+        h.energy -= BORN_ENERGY_COST + 1;
+        let pos = randomPosNoOverlap(allEntitiesArr(), ENTITY_SIZE);
+        let baby = new Hunter(pos.x, pos.y); baby.childAge = 1; newbornHunters.push(baby);
+      }
+      if (h.isChild()) h.childAge++;
+    }
     animals = animals.filter(a=>a.alive);
     hunters = hunters.filter(h=>h.alive);
-
-    // 灭绝检测
-    if (animals.length===0 && hunters.length===0 && !isGameOver) {
-      isGameOver = true;
-      restartBtn.style.display = "block";
-    }
+    animals = animals.concat(newbornAnimals);
+    hunters = hunters.concat(newbornHunters);
+    dayStep = 0;
   }
 
-  function render() {
-    ctx.clearRect(0,0,GRID_SIZE,GRID_SIZE);
-    // 食物
-    for(const f of foods){
-      ctx.beginPath();
-      ctx.arc(f.x, f.y, ENTITY_SIZE-2, 0, Math.PI*2);
-      ctx.fillStyle="#34d399";
-      ctx.fill();
-      ctx.closePath();
-    }
-    // 蓝生物
-    for(const a of animals){
-      ctx.save();
-      ctx.globalAlpha=a.isChild()?0.45:1.0;
-      ctx.beginPath();
-      ctx.arc(a.x,a.y,ENTITY_SIZE,0,Math.PI*2);
-      ctx.fillStyle=a.color();
-      ctx.fill();
-      ctx.closePath();
-      ctx.restore();
-    }
-    // 红猎人
-    for(const h of hunters){
-      ctx.save();
-      ctx.globalAlpha=h.isChild()?0.44:1.0;
-      ctx.beginPath();
-      ctx.arc(h.x,h.y,ENTITY_SIZE,0,Math.PI*2);
-      ctx.fillStyle=h.color();
-      ctx.fill();
-      ctx.closePath();
-      ctx.restore();
-    }
-    // 状态统计显示
-    ctx.font="bold 13px Arial";
-    ctx.fillStyle="#facc15";
-    ctx.fillText(`天数:${Math.floor(ticks/DAY_LENGTH)+1}`,10,22);
-    ctx.fillText(`蓝生物: ${animals.length}`,110,22);
-    ctx.fillStyle="#ee4444";
-    ctx.fillText(`红猎人: ${hunters.length}`,220,22);
-    ctx.fillStyle="#14b8a6";
-    ctx.fillText(`食物: ${foods.length}`,320,22);
+  // "吃光就补"的食物机制
+  if (foods.length === 0) replenishFood(true);
 
-    // 灭绝提示
-    if (animals.length===0 && hunters.length===0) {
-      ctx.font = "18px Arial";
-      ctx.fillStyle = "#ef4444";
-      ctx.fillText("所有生物都灭绝了", 90, 240);
-    }
+  // 极端增长时收敛保护
+  if(foods.length>FOOD_MAX) foods=foods.slice(0,FOOD_MAX);
+
+  animals = animals.filter(a=>a.alive);
+  hunters = hunters.filter(h=>h.alive);
+}
+
+function render() {
+  ctx.clearRect(0,0,GRID_SIZE,GRID_SIZE);
+  // 食物
+  for(const f of foods){
+    ctx.beginPath();
+    ctx.arc(f.x, f.y, f.radius, 0, Math.PI*2);
+    ctx.fillStyle="#34d399";
+    ctx.fill();
+    ctx.closePath();
   }
-
-  function loop() {
-    update();
-    render();
-    requestAnimationFrame(loop);
+  // 普通生物
+  for(const a of animals){
+    ctx.save(); ctx.globalAlpha=a.isChild()?0.45:1.0;
+    ctx.beginPath();
+    ctx.arc(a.x,a.y,a.radius,0,Math.PI*2);
+    ctx.fillStyle=a.color();
+    ctx.fill();
+    ctx.closePath();
+    ctx.restore();
   }
-  loop();
+  // 红色猎人
+  for(const h of hunters){
+    ctx.save(); ctx.globalAlpha=h.isChild()?0.45:1.0;
+    ctx.beginPath();
+    ctx.arc(h.x,h.y,h.radius,0,Math.PI*2);
+    ctx.fillStyle=h.color();
+    ctx.fill();
+    ctx.closePath();
+    ctx.restore();
+  }
+  // 计数
+  ctx.font="bold 13px Arial";
+  ctx.fillStyle="#facc15";
+  ctx.fillText(`天数:${ticks ? Math.floor(ticks/DAY_LENGTH)+1 : 1}`,10,20);
+  ctx.fillText(`蓝生物: ${animals.length}`,110,20);
+  ctx.fillStyle="#ee4444";
+  ctx.fillText(`红猎人: ${hunters.length}`,220,20);
+  ctx.fillStyle="#14b8a6";
+  ctx.fillText(`食物: ${foods.length}`,320,20);
+  if (animals.length===0 && hunters.length===0){
+    ctx.font = "18px Arial";
+    ctx.fillStyle = "#ef4444";
+    ctx.fillText("所有生物都灭绝了", 90, 220);
+  }
+}
 
-  restartBtn.onclick = () => { init(); };
-  </script>
+// 永远循环，模拟永不停止（除非手动刷新页面）
+function loop() {
+  update();
+  render();
+  requestAnimationFrame(loop); // 永远运行
+}
+loop();
+            </script>
+          </a>
+        </li>
+      </ul>
+    </section>
+
+    <footer>
+      <div class="small">本站由 <a href="https://github.com" target="_blank" rel="noopener noreferrer" style="color:var(--accent);text-decoration:none">GitHub</a> 支持</div>
+      <div class="small">© Small 3</div>
+    </footer>
+  </main>
 </body>
 </html>
