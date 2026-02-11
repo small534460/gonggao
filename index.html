@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>生态模拟游戏</title>
+  <title>不是公告</title>
   <style>
     :root{
       --accent: #60a5fa;
@@ -99,7 +99,7 @@
 </head>
 <body>
   <div class="wrap">
-    <h1>生态模拟小游戏</h1>
+    <h1>不是-公告</h1>
     <div class="subtitle">蓝色为普通生物，红色为猎人生物，绿色为食物。蓝生物主动逃避猎人且分散，猎人优先捕蓝生物，否则吃食物。食物随机出现。你可以修改参数体验不同生态。</div>
     <div class="game-block">
       <!-- 生态模拟游戏主要区域 -->
@@ -114,16 +114,16 @@
   const ENTITY_SIZE = 7;           // 生物实体半径（像素）
   const NUM_ANIMALS = 12;          // 初始蓝生物数
   const NUM_HUNTERS = 4;           // 初始红猎人数
-  const FOOD_MAX = 22;             // 最大食物数
+  const FOOD_MAX = 27;             // 最大食物数
   const FOOD_REFRESH = 15;         // 食物补充下限
   const DAY_LENGTH = 320;          // 一天步数
   const ANIMAL_SPEED = 2.7;        // 蓝生物速度
-  const ANIMAL_VIEW_DIST = 95;     // 蓝生物警觉范围
+  const ANIMAL_VIEW_DIST = 90;     // 蓝生物警觉范围
   const ANIMAL_DISPERSE_DIST = 18; // 蓝生物分散距离
   const ANIMAL_DISPERSE_FORCE = 3.3;// 分散推力
   const ANIMAL_ESCAPE_FACTOR = 1.7; // 饥饿逃猎加速
-  const HUNTER_SPEED = 2.2;        // 红猎人速度
-  const HUNTER_VIEW_DIST = 85;     // 红猎人视野
+  const HUNTER_SPEED = 2.7;        // 红猎人速度
+  const HUNTER_VIEW_DIST = 100;     // 红猎人视野
   const HUNTER_ATTACK_DIST = ENTITY_SIZE * 1.7; // 猎人捕猎距离
   const BABY_GUARD_AGE = 1;        // 新生保护天数
   const MAX_TOTAL = 60;            // 总生物数上限
@@ -131,7 +131,7 @@
   const NORMAL_BORN = 5;           // 蓝生物繁殖能量阈值
   const HUNTER_NEED_BLUE = 1;      // 猎人每天猎蓝生物需求
   const HUNTER_NEED_FOOD = 1;      // 猎人每天食物需求
-  const HUNTER_BORN_BLUE = 2;      // 猎人生殖需蓝生物猎杀数
+  const HUNTER_BORN_BLUE = 1;      // 猎人生殖需蓝生物猎杀数
   const HUNTER_BORN_FOOD = 2;      // 猎人生殖需食物数
   const BORN_ENERGY_COST = 2;      // 蓝生物繁殖能量消耗
 
