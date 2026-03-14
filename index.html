@@ -149,32 +149,20 @@
       </div>
 
       <h2 style="margin:0 0 10px 0;font-size:14px;color:var(--muted)">—— 公告 ——</h2>
-     <form id="songSearchForm" style="margin-bottom:18px;display:flex;gap:6px;">
-  <input type="text" id="searchKeyword" placeholder="搜索歌曲..." style="flex:1;padding:7px 12px;border-radius:8px;border:1px solid #3b82f6;outline:none;font-size:15px;">
-  <button type="submit" style="padding:7px 16px;border-radius:8px;border:none;background:#60a5fa;color:white;font-weight:600;cursor:pointer;">搜索歌曲</button>
+     <form id="songSearchForm" class="search-form">
+    <input type="text" id="searchKeyword" class="search-input" placeholder="搜索歌曲、歌手或专辑...">
+    <button type="submit" class="search-button">搜索歌曲</button>
 </form>
 
 <script>
 document.getElementById('songSearchForm').addEventListener('submit', function(e) {
-  e.preventDefault(); // 阻止默认表单提交
-  
-  // 获取搜索关键词
-  var keyword = document.getElementById('searchKeyword').value.trim();
-  
-  // 如果关键词不为空
-  if (keyword) {
-    // 对关键词进行URL编码
-    var encodedKeyword = encodeURIComponent(keyword);
-    
-    // 构建歌曲海搜索URL格式：https://www.gequhai.com/s/关键词
-    var searchUrl = 'https://www.gequhai.com/s/' + encodedKeyword;
-    
-    // 在新标签页打开搜索页面
-    window.open(searchUrl, '_blank');
-  } else {
-    // 如果关键词为空，可以给用户提示
-    alert('请输入要搜索的歌曲名称或歌手名称');
-  }
+    e.preventDefault();
+    var keyword = document.getElementById('searchKeyword').value.trim();
+    if (keyword) {
+        var encodedKeyword = encodeURIComponent(keyword);
+        // 在当前窗口打开搜索结果
+        window.location.href = 'https://www.gequhai.com/s/' + encodedKeyword;
+    }
 });
 </script>
 
