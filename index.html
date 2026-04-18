@@ -158,6 +158,24 @@
           </a>
         </li>
       </ul>
+      <!-- 开始游戏按钮 -->
+<div style="display: flex; justify-content:center; margin: 24px 0;">
+  <button id="openGameModal"
+    style="background: var(--accent); color:#fff; border:none; border-radius:8px; padding: 10px 32px; font-size: 17px; font-weight:600; cursor:pointer; box-shadow:0 2px 8px rgba(60,120,240,.15); transition:background .2s;"
+    onmouseover="this.style.background='var(--accent-2)';" onmouseout="this.style.background='var(--accent)';"
+  >开始游戏</button>
+</div>
+
+<!-- 弹窗结构 -->
+<div id="gameModal" style="display:none; position:fixed; z-index:9999; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,.55); align-items:center; justify-content:center;">
+  <div style="background:#222b3a; border-radius:14px; max-width:98vw; width:420px; max-height:90vh; overflow:hidden; box-shadow:0 12px 34px rgba(10,20,40,0.45); position:relative;">
+    <div style="display:flex; justify-content:space-between; align-items:center;padding:12px 18px; background:rgba(96,165,250,0.15);">
+      <span style="font-size:16px; font-weight:600;">灵魂画手：画圆测试</span>
+      <button id="closeGameModal" style="background:none; border:none; color:#f1f1f1; font-size:20px; cursor:pointer; font-weight:bold;">×</button>
+    </div>
+    <iframe src="https://small534460.github.io/linghuenhuashou/" frameborder="0" style="display:block; width:100%; height:360px; border:none; background:#161d28;"></iframe>
+  </div>
+</div>
     </section>
 
     <footer>
@@ -165,5 +183,30 @@
       <div class="small">© Small 3</div>
     </footer>
   </main>
+  <script>
+  const openBtn = document.getElementById('openGameModal');
+  const modal = document.getElementById('gameModal');
+  const closeBtn = document.getElementById('closeGameModal');
+
+  // 打开弹窗
+  openBtn.onclick = () => {
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden'; // 防止后台滚动
+  }
+
+  // 关闭弹窗
+  closeBtn.onclick = () => {
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  // 点击遮罩关闭弹窗
+  modal.onclick = e => {
+    if (e.target === modal) {
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+  }
+</script>
 </body>
 </html>
