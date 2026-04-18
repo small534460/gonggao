@@ -131,6 +131,30 @@
       .logo{width:52px;height:52px;font-size:18px;}
       .wrap{padding:18px;}
     }
+    /* 蒙版淡入动画 */
+#gameModal {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s cubic-bezier(.45,2,.45,.8);
+  display: flex; /* 用 JS 控制 show/hide，不用display:none，否则动画无效 */
+}
+
+#gameModal.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* 弹窗内容动画，初始缩小并透明 */
+#gameModal > div {
+  transform: scale(0.92);
+  opacity: 0;
+  transition: transform 0.22s cubic-bezier(.35,1.04,.49,.84), opacity 0.22s;
+}
+/* 弹窗内容显示状态 */
+#gameModal.show > div {
+  transform: scale(1);
+  opacity: 1;
+}
   </style>
 </head>
 <body>
@@ -167,7 +191,7 @@
 </div>
 
 <!-- 弹窗结构 -->
-<div id="gameModal" style="display:none; position:fixed; z-index:9999; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,.55); align-items:center; justify-content:center;">
+<div id="gameModal" style="position:fixed; z-index:9999; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,.55); align-items:center; justify-content:center;">
   <div style="background:#222b3a; border-radius:14px; max-width:98vw; width:420px; max-height:90vh; overflow:hidden; box-shadow:0 12px 34px rgba(10,20,40,0.45); position:relative;">
     <div style="display:flex; justify-content:space-between; align-items:center;padding:12px 18px; background:rgba(96,165,250,0.15);">
       <span style="font-size:16px; font-weight:600;">灵魂画手：画圆测试</span>
@@ -183,30 +207,50 @@
       <div class="small">© Small 3</div>
     </footer>
   </main>
-  <script>
+<script>
   const openBtn = document.getElementById('openGameModal');
   const modal = document.getElementById('gameModal');
   const closeBtn = document.getElementById('closeGameModal');
 
+  // 初始隐藏
+  modal.classList.remove('show');
+  modal.style.display = 'flex';
+  modal.style.opacity = '0';
+  modal.style.pointerEvents = 'none';
+
   // 打开弹窗
   openBtn.onclick = () => {
     modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden'; // 防止后台滚动
+    void modal.offsetWidth; // 触发重绘，保证动画
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
   }
 
-  // 关闭弹窗
-  closeBtn.onclick = () => {
-    modal.style.display = 'none';
+  // 关闭弹窗（带动画的）
+  function hideModal() {
+    modal.classList.remove('show');
     document.body.style.overflow = '';
+    // 动画结束后再隐藏pointer-events等
+    setTimeout(() => {
+      if (!modal.classList.contains('show')) {
+        modal.style.pointerEvents = 'none';
+        modal.style.opacity = '0';
+      }
+    }, 250);
   }
 
-  // 点击遮罩关闭弹窗
+  closeBtn.onclick = hideModal;
   modal.onclick = e => {
-    if (e.target === modal) {
-      modal.style.display = 'none';
-      document.body.style.overflow = '';
+    if (e.target === modal) hideModal();
+  };
+
+  // 每次显示时允许交互，每次关闭时0.25s后禁止交互
+  modal.addEventListener('transitionend', () => {
+    if (modal.classList.contains('show')) {
+      modal.style.pointerEvents = 'auto';
+      modal.style.opacity = '1';
     }
-  }
+  });
 </script>
 </body>
 </html>
