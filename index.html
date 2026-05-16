@@ -6,499 +6,175 @@
   <title>公告 - Small 3 的个人领域</title>
   <style>
     :root{
-      --accent: #60a5fa;
-      --accent-2: #3b82f6;
-      --accent-green: #10B981;
-      --accent-purple: #8B5CF6;
-      --muted: rgba(230,238,248,0.6);
-      --glass: rgba(255,255,255,0.02);
-      --radius: 12px;
-      --blur-strength: 6px;
+      --accent: #60a5fa; --accent-2: #3b82f6; --accent-green: #10B981;
+      --accent-purple: #8B5CF6; --muted: rgba(230,238,248,0.6);
+      --radius: 12px; --blur-strength: 6px;
     }
     html, body { height: 100%; margin: 0; }
     body{
-      background:
-        linear-gradient(180deg, rgba(7,16,38,0.5) 0%, rgba(7,16,38,0.55) 100%),
+      background: linear-gradient(180deg, rgba(7,16,38,0.5) 0%, rgba(7,16,38,0.55) 100%),
         url('https://images.unsplash.com/photo-1463003416389-296a1ad37ca0?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') center/cover no-repeat fixed;
-      color: #e6eef8;
-      /* ============ 修复：去掉flex居中，改为正常文档流 ============ */
-      padding: 20px 16px;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      line-height: 1.6;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      min-height: 100vh;
-      box-sizing: border-box;
-      overflow-y: auto;
+      color: #e6eef8; padding: 20px 16px; -webkit-font-smoothing: antialiased;
+      line-height: 1.6; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      min-height: 100vh; box-sizing: border-box; overflow-y: auto;
     }
     .wrap{
-      width: 100%;
-      max-width: 880px;
-      background: rgba(0, 0, 0, 0.25);
-      backdrop-filter: blur(var(--blur-strength));
-      -webkit-backdrop-filter: blur(var(--blur-strength));
-      border-radius: 16px;
-      padding: 28px;
-      box-shadow: 0 8px 30px rgba(2,6,23,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      /* ============ 修复：用margin居中，不用flex ============ */
-      margin: 0 auto;
+      width: 100%; max-width: 880px; background: rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(var(--blur-strength)); -webkit-backdrop-filter: blur(var(--blur-strength));
+      border-radius: 16px; padding: 28px; box-shadow: 0 8px 30px rgba(2,6,23,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12); margin: 0 auto;
     }
-    header{
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 12px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    /* 头像样式 */
-    .avatar{
-      width: 64px;
-      height: 64px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 6px 18px rgba(96,165,250,0.15);
-      flex: 0 0 64px;
-      position: relative;
-      overflow: hidden;
-      border: 2px solid rgba(96,165,250,0.4);
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-    }
-    .avatar-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: 10px;
-      display: block;
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 1;
-    }
-    .avatar-fallback {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 20px;
-      color: white;
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 0;
-    }
-    
-    h1{
-      margin: 0;
-      font-size: 20px;
-      letter-spacing: 0.6px;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-    }
-    .subtitle{
-      margin: 6px 0 0 0;
-      color: var(--muted);
-      font-size: 13px;
-    }
-    .content{
-      margin-top: 18px;
-    }
-    .intro{
-      background: rgba(96, 165, 250, 0.08);
-      backdrop-filter: blur(3px);
-      -webkit-backdrop-filter: blur(3px);
-      padding: 14px 18px;
-      border-radius: 10px;
-      color: #e8f0fe;
-      font-size: 15px;
-      margin-bottom: 20px;
-      border: 1px solid rgba(96,165,250,0.15);
-      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-    }
-    
-    /* 公告卡片样式 */
-    .section-title {
-      margin: 0 0 12px 0;
-      font-size: 15px;
-      color: var(--muted);
-      text-align: center;
-      position: relative;
-      padding-bottom: 8px;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-    }
-    .section-title::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 60px;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, var(--accent), transparent);
-    }
-    
-    .announcements {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 14px;
-      margin-bottom: 20px;
-    }
-    
-    .announcement-card {
-      background: rgba(0, 0, 0, 0.2);
-      backdrop-filter: blur(5px);
-      -webkit-backdrop-filter: blur(5px);
-      border-radius: 12px;
-      padding: 18px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .announcement-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(96,165,250,0.4), transparent);
-    }
-    
-    .announcement-card:hover {
-      transform: translateY(-4px);
-      background: rgba(0, 0, 0, 0.35);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-      border-color: rgba(96,165,250,0.3);
-    }
-    
-    .announcement-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    
-    .announcement-icon {
-      font-size: 28px;
-      flex-shrink: 0;
-    }
-    
-    .announcement-title {
-      font-weight: 600;
-      color: #ffffff;
-      font-size: 16px;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-    }
-    
-    .announcement-link {
-      color: var(--accent);
-      font-size: 13px;
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-    .announcement-link:hover {
-      color: #93c5fd;
-      text-decoration: underline;
-    }
-    
-    .update-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    
-    .update-list li {
-      padding: 6px 0;
-      font-size: 13px;
-      color: rgba(200, 210, 225, 0.85);
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      line-height: 1.5;
-    }
-    
-    .update-list li::before {
-      content: '•';
-      color: var(--accent);
-      font-weight: bold;
-      flex-shrink: 0;
-    }
-    
-    .update-list li.new::before {
-      content: '🆕';
-    }
-    
-    .update-list li.fix::before {
-      content: '🔧';
-    }
-    
-    .update-list li.soon::before {
-      content: '🔜';
-    }
-    
-    /* 游戏区域 */
-    .game-section {
-      text-align: center;
-      margin-top: 20px;
-      padding-top: 20px;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .game-hint {
-      color: var(--muted);
-      font-size: 14px;
-      margin-bottom: 12px;
-    }
-    
-    footer{
-      margin-top: 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      color: var(--muted);
-      font-size: 13px;
-      padding-top: 16px;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-    }
-    footer a {
-      color: var(--accent);
-      text-decoration: none;
-    }
-    footer a:hover {
-      color: #93c5fd;
-      text-decoration: underline;
-    }
-    
-    /* 蒙版淡入动画 */
-    #gameModal {
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s cubic-bezier(.45,2,.45,.8);
-      display: flex;
-    }
-    #gameModal.show {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    #gameModal > div {
-      transform: scale(0.92);
-      opacity: 0;
-      transition: transform 0.22s cubic-bezier(.35,1.04,.49,.84), opacity 0.22s;
-    }
-    #gameModal.show > div {
-      transform: scale(1);
-      opacity: 1;
-    }
-    
-    @media (max-width:768px){
-      body{padding:16px 12px}
-      .wrap{padding:20px 16px;border-radius:14px}
-      .avatar{width:48px;height:48px;flex:0 0 48px;border-radius:10px}
-      .avatar-img{border-radius:8px}
-      .avatar-fallback{font-size:16px;border-radius:8px}
-      h1{font-size:17px}
-      .announcements{grid-template-columns:1fr}
-      .announcement-card{padding:14px}
-      footer{flex-direction:column;text-align:center;gap:6px}
-    }
-    
-    @media (max-width:480px){
-      body{padding:12px 8px}
-      .wrap{padding:16px 12px;border-radius:12px}
-      header{flex-direction:column;align-items:center;text-align:center}
-      .avatar{width:52px;height:52px;flex:0 0 52px}
-      h1{font-size:18px}
-    }
+    header{display:flex;align-items:center;gap:16px;margin-bottom:12px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.1)}
+    .avatar{width:64px;height:64px;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(96,165,250,0.15);flex:0 0 64px;position:relative;overflow:hidden;border:2px solid rgba(96,165,250,0.4);background:linear-gradient(135deg,var(--accent),var(--accent-2))}
+    .avatar-img{width:100%;height:100%;object-fit:cover;border-radius:10px;display:block;position:absolute;top:0;left:0;z-index:1}
+    .avatar-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;color:white;background:linear-gradient(135deg,var(--accent),var(--accent-2));position:absolute;top:0;left:0;z-index:0}
+    h1{margin:0;font-size:20px;letter-spacing:0.6px;text-shadow:0 1px 3px rgba(0,0,0,0.3)}
+    .subtitle{margin:6px 0 0 0;color:var(--muted);font-size:13px}
+    .content{margin-top:18px}
+    .intro{background:rgba(96,165,250,0.08);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);padding:14px 18px;border-radius:10px;color:#e8f0fe;font-size:15px;margin-bottom:20px;border:1px solid rgba(96,165,250,0.15);text-shadow:0 1px 2px rgba(0,0,0,0.2)}
+    .section-title{margin:0 0 12px 0;font-size:15px;color:var(--muted);text-align:center;position:relative;padding-bottom:8px;text-shadow:0 1px 2px rgba(0,0,0,0.2)}
+    .section-title::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:60px;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+    .announcements{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-bottom:20px}
+    .announcement-card{background:rgba(0,0,0,0.2);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);border-radius:12px;padding:18px;border:1px solid rgba(255,255,255,0.1);transition:all 0.3s;position:relative;overflow:hidden}
+    .announcement-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(96,165,250,0.4),transparent)}
+    .announcement-card:hover{transform:translateY(-4px);background:rgba(0,0,0,0.35);box-shadow:0 10px 30px rgba(0,0,0,0.4);border-color:rgba(96,165,250,0.3)}
+    .announcement-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.08)}
+    .announcement-icon{font-size:28px;flex-shrink:0}
+    .announcement-title{font-weight:600;color:#fff;font-size:16px;text-shadow:0 1px 2px rgba(0,0,0,0.3)}
+    .announcement-link{color:var(--accent);font-size:13px;text-decoration:none;transition:color 0.2s}
+    .announcement-link:hover{color:#93c5fd;text-decoration:underline}
+    .update-list{list-style:none;padding:0;margin:0}
+    .update-list li{padding:6px 0;font-size:13px;color:rgba(200,210,225,0.85);display:flex;align-items:flex-start;gap:8px;line-height:1.5}
+    .update-list li::before{content:'•';color:var(--accent);font-weight:bold;flex-shrink:0}
+    .update-list li.new::before{content:'🆕'}
+    .update-list li.fix::before{content:'🔧'}
+    .update-list li.soon::before{content:'🔜'}
+    .game-section{text-align:center;margin-top:20px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.1)}
+    .game-hint{color:var(--muted);font-size:14px;margin-bottom:12px}
+    footer{margin-top:24px;display:flex;justify-content:space-between;align-items:center;gap:12px;color:var(--muted);font-size:13px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.1);text-shadow:0 1px 2px rgba(0,0,0,0.2)}
+    footer a{color:var(--accent);text-decoration:none}
+    #gameModal{opacity:0;pointer-events:none;transition:opacity 0.25s cubic-bezier(.45,2,.45,.8);display:flex}
+    #gameModal.show{opacity:1;pointer-events:auto}
+    #gameModal > div{transform:scale(0.92);opacity:0;transition:transform 0.22s cubic-bezier(.35,1.04,.49,.84),opacity 0.22s}
+    #gameModal.show > div{transform:scale(1);opacity:1}
+    @media(max-width:768px){body{padding:16px 12px}.wrap{padding:20px 16px;border-radius:14px}.avatar{width:48px;height:48px;flex:0 0 48px;border-radius:10px}h1{font-size:17px}.announcements{grid-template-columns:1fr}footer{flex-direction:column;text-align:center}}
+    @media(max-width:480px){body{padding:12px 8px}.wrap{padding:16px 12px}header{flex-direction:column;align-items:center;text-align:center}.avatar{width:52px;height:52px}h1{font-size:18px}}
   </style>
 </head>
 <body>
-  <main class="wrap" role="main">
-    <header>
-      <div class="avatar" id="avatarContainer">
-        <img src="https://i.mituw.com/imgs/2026/03/15/de4945abb96be550.jpg" alt="Small 3 的头像" class="avatar-img" id="avatarImg" onerror="showAvatarFallback()">
-        <div class="avatar-fallback" id="avatarFallback" style="display: none;">S3</div>
-      </div>
-      <div>
-        <h1>Small 3 的个人领域</h1>
-        <div class="subtitle">站点更新公告</div>
-      </div>
-    </header>
+<main class="wrap" role="main">
+  <header>
+    <div class="avatar"><img src="https://i.mituw.com/imgs/2026/03/15/de4945abb96be550.jpg" alt="头像" class="avatar-img" onerror="showAvatarFallback()"><div class="avatar-fallback" style="display:none">S3</div></div>
+    <div><h1>Small 3 的个人领域</h1><div class="subtitle">站点更新公告</div></div>
+  </header>
 
-    <section class="content">
-      <div class="intro">
-        📢 欢迎查看 Small 3 各站点的最新更新！这里会及时发布新功能、改进和计划。
-      </div>
+  <section class="content">
+    <div class="intro">
+      📢 欢迎查看 Small 3 各站点的最新更新！<br>
+      🌐 新域名上线：<a href="https://small534460.netlify.app/" target="_blank" style="color:var(--accent);font-weight:600">https://small534460.netlify.app/</a>
+    </div>
 
-      <h2 class="section-title">—— 📢 最新公告 ——</h2>
+    <h2 class="section-title">—— 📢 最新公告 ——</h2>
 
-      <div class="announcements">
-        
-        <!-- 🏠 主页公告 -->
-        <div class="announcement-card">
-          <div class="announcement-header">
-            <span class="announcement-icon">🏠</span>
-            <div>
-              <div class="announcement-title">Small 3 主页</div>
-              <a class="announcement-link" href="https://small534460.github.io/" target="_blank" rel="noopener noreferrer">访问主页 →</a>
-            </div>
-          </div>
-          <ul class="update-list">
-            <li class="new">随机动态背景图（Unsplash 高质量图片）</li>
-            <li class="new">图库切换功能（自然风景 / 艺术创意）</li>
-            <li class="new">毛玻璃强度可调节滑块</li>
-            <li class="new">亮度三档调节（明亮 / 适中 / 暗色）</li>
-            <li class="new">实时时钟 + 每日一言</li>
-            <li class="new">随机访问有趣网站（🎲 按钮）</li>
-            <li class="fix">背景图片色彩优化，透明度降低</li>
-            <li class="fix">手机端显示体验改进</li>
-          </ul>
+    <div class="announcements">
+      <!-- 🏠 主页 -->
+      <div class="announcement-card">
+        <div class="announcement-header">
+          <span class="announcement-icon">🏠</span>
+          <div><div class="announcement-title">Small 3 主页</div><a class="announcement-link" href="https://small534460.github.io/" target="_blank">访问主页 →</a></div>
         </div>
-
-        <!-- 🛠️ 实用工具公告 -->
-        <div class="announcement-card">
-          <div class="announcement-header">
-            <span class="announcement-icon">🛠️</span>
-            <div>
-              <div class="announcement-title">实用工具</div>
-              <a class="announcement-link" href="https://small534460.github.io/shiyoungongjui/" target="_blank" rel="noopener noreferrer">访问工具页 →</a>
-            </div>
-          </div>
-          <ul class="update-list">
-            <li class="new">毛玻璃透明风格全面升级</li>
-            <li class="new">分类切换流畅动画效果</li>
-            <li class="new">工具卡片渐入动画（依次淡入）</li>
-            <li>实用破解工具：IDM破解版、猫抓、极域工具箱等</li>
-            <li>系统优化工具：BoosterX、Mem Reduct、Geek Uninstaller 等</li>
-            <li class="fix">文件夹式分类按钮优化</li>
-            <li class="fix">手机端响应式布局改进</li>
-          </ul>
-        </div>
-
-        <!-- 📁 文件管理器公告 -->
-        <div class="announcement-card">
-          <div class="announcement-header">
-            <span class="announcement-icon">📁</span>
-            <div>
-              <div class="announcement-title">GitHub 文件管理器</div>
-              <a class="announcement-link" href="https://small534460.github.io/wenjiantuoguan/" target="_blank" rel="noopener noreferrer">访问管理器 →</a>
-            </div>
-          </div>
-          <ul class="update-list">
-            <li class="new">管理员密码验证系统（SHA-256 加密）</li>
-            <li class="new">令牌加密存储（XOR + 密码保护）</li>
-            <li class="new">解锁后自动填充 GitHub 令牌</li>
-            <li>📂 文件浏览 / 📄 文本编辑 / 🎵 音乐播放</li>
-            <li>🎬 视频预览 / 🖼️ 图片查看 / 📥 文件下载</li>
-            <li>📤 拖放上传 + 文件夹管理</li>
-            <li class="fix">安全升级：令牌不再以明文存储</li>
-            <li class="fix">毛玻璃 UI 风格统一</li>
-          </ul>
-        </div>
-
+        <ul class="update-list">
+          <li class="new">🎵 内置音乐播放器（进度条/上下首/循环模式）</li>
+          <li class="new">🎨 二次元随机背景图（樱花 API）</li>
+          <li class="new">📦 GitHub 仓库音乐托管（加密令牌）</li>
+          <li class="new">🌐 Netlify 新域名：small534460.netlify.app</li>
+          <li>🔮 毛玻璃强度滑块调节</li>
+          <li>🌓 亮度三档调节</li>
+          <li>🕐 实时时钟 + 每日一言</li>
+          <li class="fix">删除 Unsplash API（已失效），更换图源</li>
+          <li class="fix">右下角悬浮球精简，只保留音乐</li>
+        </ul>
       </div>
 
-      <!-- 画圆游戏 -->
-      <div class="game-section">
-        <p class="game-hint">🎮 对了！这里是秋送我的画圆小游戏，你不想试一下吗？</p>
-        <button id="openGameModal"
-          style="background: linear-gradient(135deg, var(--accent), var(--accent-2)); color:#fff; border:none; border-radius:8px; padding: 12px 36px; font-size: 17px; font-weight:600; cursor:pointer; box-shadow:0 4px 16px rgba(96,165,250,0.3); transition:all .2s;"
-          onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(96,165,250,0.4)'" 
-          onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 16px rgba(96,165,250,0.3)'"
-        >🎨 开始游戏</button>
-      </div>
-
-      <div id="gameModal" style="position:fixed; z-index:9999; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,.55); align-items:center; justify-content:center;">
-        <div style="background:rgba(0,0,0,0.5); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-radius:14px; max-width:98vw; width:420px; max-height:90vh; overflow:hidden; box-shadow:0 12px 34px rgba(10,20,40,0.45); border:1px solid rgba(255,255,255,0.12);">
-          <div style="display:flex; justify-content:space-between; align-items:center;padding:12px 18px; background:rgba(96,165,250,0.15);">
-            <span style="font-size:16px; font-weight:600;">🎨 灵魂画手：画圆测试</span>
-            <button id="closeGameModal" style="background:none; border:none; color:#f1f1f1; font-size:20px; cursor:pointer; font-weight:bold;">×</button>
-          </div>
-          <iframe src="https://small534460.github.io/linghuenhuashou/" frameborder="0" style="display:block; width:100%; height:360px; border:none; background:#161d28;"></iframe>
+      <!-- 聊天室 -->
+      <div class="announcement-card">
+        <div class="announcement-header">
+          <span class="announcement-icon">💬</span>
+          <div><div class="announcement-title">Small 3 的聊天室</div><a class="announcement-link" href="https://534460.netlify.app/" target="_blank">访问聊天室 →</a></div>
         </div>
+        <ul class="update-list">
+          <li class="new">💾 升级到 Supabase 数据库（毫秒级响应）</li>
+          <li class="new">👥 管理员面板（批准/删除用户）</li>
+          <li class="new">🗑️ 选择性删除聊天记录（N条/全部）</li>
+          <li>🔐 管理员密码验证（SHA-256）</li>
+          <li>🌙 夜间/白天模式切换</li>
+          <li>📋 运行日志系统</li>
+          <li class="fix">不再依赖 GitHub API，速度提升</li>
+          <li class="fix">Row Level Security 策略完善</li>
+        </ul>
       </div>
-    </section>
 
-    <footer>
-      <div class="small">本站由 <a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a> 支持</div>
-      <div class="small">© Small 3 | 探索数字世界</div>
-    </footer>
-  </main>
+      <!-- 🛠️ 实用工具 -->
+      <div class="announcement-card">
+        <div class="announcement-header">
+          <span class="announcement-icon">🛠️</span>
+          <div><div class="announcement-title">实用工具</div><a class="announcement-link" href="https://small534460.github.io/shiyoungongjui/" target="_blank">访问工具页 →</a></div>
+        </div>
+        <ul class="update-list">
+          <li class="new">🔐 哈希值生成（SHA-256/SHA-1/MD5）</li>
+          <li class="new">🔒 文本加解密（AES-GCM + 密码保护）</li>
+          <li class="new">📦 文件合并工具（浏览器本地合并分片）</li>
+          <li>📁 实用破解工具合集</li>
+          <li>🗂️ 系统优化工具合集</li>
+          <li class="fix">加密算法修复（base64 大数组溢出）</li>
+        </ul>
+      </div>
+
+      <!-- 📁 文件管理器 -->
+      <div class="announcement-card">
+        <div class="announcement-header">
+          <span class="announcement-icon">📁</span>
+          <div><div class="announcement-title">GitHub 文件管理器</div><a class="announcement-link" href="https://small534460.github.io/wenjiantuoguan/" target="_blank">访问管理器 →</a></div>
+        </div>
+        <ul class="update-list">
+          <li class="new">📤 大文件自动分片上传（>20MB）</li>
+          <li>📂 文件浏览/📄 文本编辑/🎵 音乐播放</li>
+          <li>🎬 视频预览/🖼️ 图片查看/📥 文件下载</li>
+          <li>🔐 加密令牌 + 管理员模式</li>
+          <li class="fix">分片文件金色边框标记</li>
+          <li class="fix">404 错误处理优化</li>
+          <li class="fix">合并下载改为独立下载（配合工具合并）</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="game-section">
+      <p class="game-hint">🎮 对了！这里是秋送我的画圆小游戏，你不想试一下吗？</p>
+      <button id="openGameModal" style="background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;border:none;border-radius:8px;padding:12px 36px;font-size:17px;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(96,165,250,0.3);transition:all .2s">🎨 开始游戏</button>
+    </div>
+
+    <div id="gameModal" style="position:fixed;z-index:9999;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.55);align-items:center;justify-content:center;">
+      <div style="background:rgba(0,0,0,0.5);backdrop-filter:blur(20px);border-radius:14px;max-width:98vw;width:420px;max-height:90vh;overflow:hidden;box-shadow:0 12px 34px rgba(10,20,40,0.45);border:1px solid rgba(255,255,255,0.12);">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:rgba(96,165,250,0.15);"><span style="font-size:16px;font-weight:600;">🎨 灵魂画手：画圆测试</span><button id="closeGameModal" style="background:none;border:none;color:#f1f1f1;font-size:20px;cursor:pointer;font-weight:bold;">×</button></div>
+        <iframe src="https://small534460.github.io/linghuenhuashou/" frameborder="0" style="display:block;width:100%;height:360px;border:none;background:#161d28;"></iframe>
+      </div>
+    </div>
+  </section>
+
+  <footer><div class="small">本站由 <a href="https://github.com" target="_blank">GitHub</a> 支持</div><div class="small">© Small 3 | 探索数字世界</div></footer>
+</main>
 
 <script>
-  // 头像加载处理
-  function showAvatarFallback() {
-    var avatarImg = document.getElementById('avatarImg');
-    var avatarFallback = document.getElementById('avatarFallback');
-    if (avatarImg) avatarImg.style.display = 'none';
-    if (avatarFallback) avatarFallback.style.display = 'flex';
-  }
-  
-  window.addEventListener('load', function() {
-    var avatarImg = document.getElementById('avatarImg');
-    var avatarFallback = document.getElementById('avatarFallback');
-    if (avatarImg && avatarImg.complete && avatarImg.naturalWidth === 0) {
-      showAvatarFallback();
-    }
-    if (avatarImg) {
-      avatarImg.onload = function() {
-        avatarImg.style.display = 'block';
-        avatarFallback.style.display = 'none';
-      };
-      avatarImg.onerror = showAvatarFallback;
-    }
-  });
+function showAvatarFallback(){var i=document.querySelector('.avatar-img'),f=document.querySelector('.avatar-fallback');if(i)i.style.display='none';if(f)f.style.display='flex'}
+(function(){var i=document.querySelector('.avatar-img'),f=document.querySelector('.avatar-fallback');if(i&&f){i.onload=function(){i.style.display='block';f.style.display='none'};i.onerror=function(){i.style.display='none';f.style.display='flex'};if(i.complete&&i.naturalWidth>0){i.style.display='block';f.style.display='none'}}})();
 
-  // 游戏弹窗
-  var openBtn = document.getElementById('openGameModal');
-  var modal = document.getElementById('gameModal');
-  var closeBtn = document.getElementById('closeGameModal');
-
-  modal.classList.remove('show');
-  modal.style.display = 'flex';
-  modal.style.opacity = '0';
-  modal.style.pointerEvents = 'none';
-
-  openBtn.onclick = function() {
-    modal.style.display = 'flex';
-    void modal.offsetWidth;
-    modal.classList.add('show');
-    document.body.style.overflow = 'hidden';
-  };
-
-  function hideModal() {
-    modal.classList.remove('show');
-    document.body.style.overflow = '';
-    setTimeout(function() {
-      if (!modal.classList.contains('show')) {
-        modal.style.pointerEvents = 'none';
-        modal.style.opacity = '0';
-      }
-    }, 250);
-  }
-
-  closeBtn.onclick = hideModal;
-  modal.onclick = function(e) {
-    if (e.target === modal) hideModal();
-  };
-
-  modal.addEventListener('transitionend', function() {
-    if (modal.classList.contains('show')) {
-      modal.style.pointerEvents = 'auto';
-      modal.style.opacity = '1';
-    }
-  });
+var openBtn=document.getElementById('openGameModal'),modal=document.getElementById('gameModal'),closeBtn=document.getElementById('closeGameModal');
+modal.classList.remove('show');modal.style.display='flex';modal.style.opacity='0';modal.style.pointerEvents='none';
+openBtn.onclick=function(){modal.style.display='flex';void modal.offsetWidth;modal.classList.add('show');document.body.style.overflow='hidden'};
+function hideModal(){modal.classList.remove('show');document.body.style.overflow='';setTimeout(function(){if(!modal.classList.contains('show')){modal.style.pointerEvents='none';modal.style.opacity='0'}},250)}
+closeBtn.onclick=hideModal;
+modal.onclick=function(e){if(e.target===modal)hideModal()};
+modal.addEventListener('transitionend',function(){if(modal.classList.contains('show')){modal.style.pointerEvents='auto';modal.style.opacity='1'}});
 </script>
 </body>
 </html>
