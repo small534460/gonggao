@@ -16,13 +16,18 @@
         url('https://images.unsplash.com/photo-1463003416389-296a1ad37ca0?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') center/cover no-repeat fixed;
       color: #e6eef8; padding: 20px 16px; -webkit-font-smoothing: antialiased;
       line-height: 1.6; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      min-height: 100vh; box-sizing: border-box; overflow-y: auto;
+      min-height: 100vh; box-sizing: border-box;
+      /* ★ 关键：body不滚动，让wrap内部滚动 */
+      overflow: hidden;
+      display: flex; align-items: flex-start; justify-content: center;
     }
     .wrap{
       width: 100%; max-width: 880px; background: rgba(0, 0, 0, 0.25);
       backdrop-filter: blur(var(--blur-strength)); -webkit-backdrop-filter: blur(var(--blur-strength));
       border-radius: 16px; padding: 28px; box-shadow: 0 8px 30px rgba(2,6,23,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
       border: 1px solid rgba(255, 255, 255, 0.12); margin: 0 auto;
+      /* ★ 内部可滚动 */
+      max-height: calc(100vh - 40px); overflow-y: auto;
     }
     header{display:flex;align-items:center;gap:16px;margin-bottom:12px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.1)}
     .avatar{width:64px;height:64px;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(96,165,250,0.15);flex:0 0 64px;position:relative;overflow:hidden;border:2px solid rgba(96,165,250,0.4);background:linear-gradient(135deg,var(--accent),var(--accent-2))}
@@ -53,12 +58,56 @@
     .game-hint{color:var(--muted);font-size:14px;margin-bottom:12px}
     footer{margin-top:24px;display:flex;justify-content:space-between;align-items:center;gap:12px;color:var(--muted);font-size:13px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.1);text-shadow:0 1px 2px rgba(0,0,0,0.2)}
     footer a{color:var(--accent);text-decoration:none}
-    #gameModal{opacity:0;pointer-events:none;transition:opacity 0.25s cubic-bezier(.45,2,.45,.8);display:flex}
+
+    /* ★★★ 游戏弹窗 ★★★ */
+    #gameOverlay{
+      position:fixed;z-index:9998;top:0;left:0;width:100%;height:100%;
+      background:rgba(0,0,0,.7);opacity:0;pointer-events:none;
+      transition:opacity 0.3s ease;
+    }
+    #gameOverlay.show{opacity:1;pointer-events:auto}
+    #gameModal{
+      position:fixed;z-index:9999;
+      top:50%;left:50%;
+      transform:translate(-50%,-50%);
+      opacity:0;pointer-events:none;
+      transition:opacity 0.3s ease;
+    }
     #gameModal.show{opacity:1;pointer-events:auto}
-    #gameModal > div{transform:scale(0.92);opacity:0;transition:transform 0.22s cubic-bezier(.35,1.04,.49,.84),opacity 0.22s}
-    #gameModal.show > div{transform:scale(1);opacity:1}
-    @media(max-width:768px){body{padding:16px 12px}.wrap{padding:20px 16px;border-radius:14px}.avatar{width:48px;height:48px;flex:0 0 48px;border-radius:10px}h1{font-size:17px}.announcements{grid-template-columns:1fr}footer{flex-direction:column;text-align:center}}
-    @media(max-width:480px){body{padding:12px 8px}.wrap{padding:16px 12px}header{flex-direction:column;align-items:center;text-align:center}.avatar{width:52px;height:52px}h1{font-size:18px}}
+    #gameModal .game-window{
+      background:rgba(0,0,0,0.5);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+      border-radius:14px;width:92vw;max-width:800px;height:85vh;max-height:600px;
+      box-shadow:0 20px 60px rgba(10,20,40,0.5);
+      border:1px solid rgba(255,255,255,0.12);
+      display:flex;flex-direction:column;overflow:hidden;
+    }
+    #gameModal .game-header{
+      display:flex;justify-content:space-between;align-items:center;
+      padding:12px 18px;background:rgba(96,165,250,0.15);flex-shrink:0;
+    }
+    #gameModal .game-header span{font-size:16px;font-weight:600}
+    #gameModal .game-close-btn{
+      background:none;border:none;color:#f1f1f1;font-size:24px;
+      cursor:pointer;font-weight:bold;padding:0 4px;line-height:1;
+    }
+    #gameModal .game-close-btn:hover{color:#fff}
+    #gameModal iframe{
+      display:block;width:100%;flex:1;border:none;background:#161d28;
+    }
+
+    @media(max-width:768px){
+      body{padding:12px 8px}.wrap{padding:20px 16px;border-radius:14px;max-height:calc(100vh - 24px)}
+      .avatar{width:48px;height:48px;flex:0 0 48px;border-radius:10px}h1{font-size:17px}
+      .announcements{grid-template-columns:1fr}footer{flex-direction:column;text-align:center}
+      #gameModal .game-window{width:96vw;height:80vh;max-height:500px}
+      #gameModal .game-header span{font-size:14px}
+    }
+    @media(max-width:480px){
+      body{padding:8px 4px}.wrap{padding:16px 12px;max-height:calc(100vh - 16px)}
+      header{flex-direction:column;align-items:center;text-align:center}
+      .avatar{width:52px;height:52px}h1{font-size:18px}
+      #gameModal .game-window{width:98vw;height:75vh;max-height:400px;border-radius:10px}
+    }
   </style>
 </head>
 <body>
@@ -71,92 +120,69 @@
   <section class="content">
     <div class="intro">
       📢 欢迎查看 Small 3 各站点的最新更新！<br>
-      🌐 新域名上线：<a href="https://small534460.netlify.app/" target="_blank" style="color:var(--accent);font-weight:600">https://small534460.netlify.app/</a>
+      🌐 新域名：<a href="https://small534460.top" target="_blank" style="color:var(--accent);font-weight:600">small534460.top</a>
     </div>
 
     <h2 class="section-title">—— 📢 最新公告 ——</h2>
 
     <div class="announcements">
-      <!-- 🏠 主页 -->
       <div class="announcement-card">
-        <div class="announcement-header">
-          <span class="announcement-icon">🏠</span>
-          <div><div class="announcement-title">Small 3 主页</div><a class="announcement-link" href="https://small534460.github.io/" target="_blank">访问主页 →</a></div>
-        </div>
+        <div class="announcement-header"><span class="announcement-icon">🏠</span><div><div class="announcement-title">Small 3 主页</div><a class="announcement-link" href="https://small534460.top" target="_blank">访问主页 →</a></div></div>
         <ul class="update-list">
-          <li class="new">🎵 内置音乐播放器（进度条/上下首/循环模式）</li>
-          <li class="new">🎨 二次元随机背景图（樱花 API）</li>
-          <li class="new">📦 GitHub 仓库音乐托管（加密令牌）</li>
-          <li class="new">🌐 Netlify 新域名：small534460.netlify.app</li>
-          <li>🔮 毛玻璃强度滑块调节</li>
+          <li class="new">✨ 优雅加载界面（头像脉冲 + 进度条）</li>
+          <li class="new">🎨 二次元背景（樱花园 API）</li>
+          <li class="new">🌐 正式域名：small534460.top</li>
+          <li class="new">🎵 音乐播放器（进度条/上下首/循环）</li>
+          <li>🔮 毛玻璃强度滑块</li>
           <li>🌓 亮度三档调节</li>
-          <li>🕐 实时时钟 + 每日一言</li>
-          <li class="fix">删除 Unsplash API（已失效），更换图源</li>
-          <li class="fix">右下角悬浮球精简，只保留音乐</li>
+          <li class="fix">卡片入场动画回归</li>
+          <li class="fix">背景亮度优化，色彩更鲜艳</li>
         </ul>
       </div>
-
-      <!-- 聊天室 -->
       <div class="announcement-card">
-        <div class="announcement-header">
-          <span class="announcement-icon">💬</span>
-          <div><div class="announcement-title">Small 3 的聊天室</div><a class="announcement-link" href="https://534460.netlify.app/" target="_blank">访问聊天室 →</a></div>
-        </div>
+        <div class="announcement-header"><span class="announcement-icon">💬</span><div><div class="announcement-title">Small 3 的聊天室</div><a class="announcement-link" href="https://534460.netlify.app/" target="_blank">访问聊天室 →</a></div></div>
         <ul class="update-list">
-          <li class="new">💾 升级到 Supabase 数据库（毫秒级响应）</li>
-          <li class="new">👥 管理员面板（批准/删除用户）</li>
-          <li class="new">🗑️ 选择性删除聊天记录（N条/全部）</li>
-          <li>🔐 管理员密码验证（SHA-256）</li>
-          <li>🌙 夜间/白天模式切换</li>
-          <li>📋 运行日志系统</li>
-          <li class="fix">不再依赖 GitHub API，速度提升</li>
-          <li class="fix">Row Level Security 策略完善</li>
+          <li>💾 Supabase 数据库（毫秒级响应）</li>
+          <li>👥 管理员面板（批准/删除用户）</li>
+          <li>🗑️ 选择性删除聊天记录</li>
+          <li>🌙 夜间/白天模式</li>
         </ul>
       </div>
-
-      <!-- 🛠️ 实用工具 -->
       <div class="announcement-card">
-        <div class="announcement-header">
-          <span class="announcement-icon">🛠️</span>
-          <div><div class="announcement-title">实用工具</div><a class="announcement-link" href="https://small534460.github.io/shiyoungongjui/" target="_blank">访问工具页 →</a></div>
-        </div>
+        <div class="announcement-header"><span class="announcement-icon">🛠️</span><div><div class="announcement-title">实用工具</div><a class="announcement-link" href="https://small534460.github.io/shiyoungongjui/" target="_blank">访问工具页 →</a></div></div>
         <ul class="update-list">
-          <li class="new">🔐 哈希值生成（SHA-256/SHA-1/MD5）</li>
-          <li class="new">🔒 文本加解密（AES-GCM + 密码保护）</li>
-          <li class="new">📦 文件合并工具（浏览器本地合并分片）</li>
-          <li>📁 实用破解工具合集</li>
-          <li>🗂️ 系统优化工具合集</li>
-          <li class="fix">加密算法修复（base64 大数组溢出）</li>
+          <li>🔐 哈希值生成（SHA-256/SHA-1/MD5）</li>
+          <li>🔒 文本加解密（AES-GCM）</li>
+          <li>📦 文件合并工具</li>
         </ul>
       </div>
-
-      <!-- 📁 文件管理器 -->
       <div class="announcement-card">
-        <div class="announcement-header">
-          <span class="announcement-icon">📁</span>
-          <div><div class="announcement-title">GitHub 文件管理器</div><a class="announcement-link" href="https://small534460.github.io/wenjiantuoguan/" target="_blank">访问管理器 →</a></div>
-        </div>
+        <div class="announcement-header"><span class="announcement-icon">📁</span><div><div class="announcement-title">文件管理器</div><a class="announcement-link" href="https://small534460.github.io/wenjiantuoguan/" target="_blank">访问管理器 →</a></div></div>
         <ul class="update-list">
-          <li class="new">📤 大文件自动分片上传（>20MB）</li>
-          <li>📂 文件浏览/📄 文本编辑/🎵 音乐播放</li>
-          <li>🎬 视频预览/🖼️ 图片查看/📥 文件下载</li>
+          <li>📤 大文件分片上传（>20MB）</li>
+          <li>📂 文件浏览/编辑</li>
           <li>🔐 加密令牌 + 管理员模式</li>
-          <li class="fix">分片文件金色边框标记</li>
-          <li class="fix">404 错误处理优化</li>
-          <li class="fix">合并下载改为独立下载（配合工具合并）</li>
         </ul>
       </div>
     </div>
 
+    <!-- 🎮 游戏区 -->
     <div class="game-section">
-      <p class="game-hint">🎮 对了！这里是秋送我的画圆小游戏，你不想试一下吗？</p>
-      <button id="openGameModal" style="background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;border:none;border-radius:8px;padding:12px 36px;font-size:17px;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(96,165,250,0.3);transition:all .2s">🎨 开始游戏</button>
+      <p class="game-hint">🔫 秋制作的伪3D德军总部风格射击游戏！来试试你的枪法吧！</p>
+      <button id="openGameModal" style="background:linear-gradient(135deg,#8B0000,#CC0000);color:#fff;border:none;border-radius:8px;padding:12px 36px;font-size:17px;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(200,0,0,0.3);transition:all .2s">🔫 开始战斗</button>
     </div>
 
-    <div id="gameModal" style="position:fixed;z-index:9999;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.55);align-items:center;justify-content:center;">
-      <div style="background:rgba(0,0,0,0.5);backdrop-filter:blur(20px);border-radius:14px;max-width:98vw;width:420px;max-height:90vh;overflow:hidden;box-shadow:0 12px 34px rgba(10,20,40,0.45);border:1px solid rgba(255,255,255,0.12);">
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:rgba(96,165,250,0.15);"><span style="font-size:16px;font-weight:600;">🎨 灵魂画手：画圆测试</span><button id="closeGameModal" style="background:none;border:none;color:#f1f1f1;font-size:20px;cursor:pointer;font-weight:bold;">×</button></div>
-        <iframe src="https://small534460.github.io/linghuenhuashou/" frameborder="0" style="display:block;width:100%;height:360px;border:none;background:#161d28;"></iframe>
+    <!-- ★★★ 背景遮罩 ★★★ -->
+    <div id="gameOverlay"></div>
+
+    <!-- ★★★ 游戏弹窗 ★★★ -->
+    <div id="gameModal">
+      <div class="game-window">
+        <div class="game-header">
+          <span>🔫 德军总部：伪3D射击</span>
+          <button class="game-close-btn" id="closeGameModal">×</button>
+        </div>
+        <iframe src="https://small534460.github.io/linghuenhuashou/"></iframe>
       </div>
     </div>
   </section>
@@ -165,16 +191,38 @@
 </main>
 
 <script>
-function showAvatarFallback(){var i=document.querySelector('.avatar-img'),f=document.querySelector('.avatar-fallback');if(i)i.style.display='none';if(f)f.style.display='flex'}
-(function(){var i=document.querySelector('.avatar-img'),f=document.querySelector('.avatar-fallback');if(i&&f){i.onload=function(){i.style.display='block';f.style.display='none'};i.onerror=function(){i.style.display='none';f.style.display='flex'};if(i.complete&&i.naturalWidth>0){i.style.display='block';f.style.display='none'}}})();
+var openBtn=document.getElementById('openGameModal'),
+    modal=document.getElementById('gameModal'),
+    overlay=document.getElementById('gameOverlay'),
+    closeBtn=document.getElementById('closeGameModal');
 
-var openBtn=document.getElementById('openGameModal'),modal=document.getElementById('gameModal'),closeBtn=document.getElementById('closeGameModal');
-modal.classList.remove('show');modal.style.display='flex';modal.style.opacity='0';modal.style.pointerEvents='none';
-openBtn.onclick=function(){modal.style.display='flex';void modal.offsetWidth;modal.classList.add('show');document.body.style.overflow='hidden'};
-function hideModal(){modal.classList.remove('show');document.body.style.overflow='';setTimeout(function(){if(!modal.classList.contains('show')){modal.style.pointerEvents='none';modal.style.opacity='0'}},250)}
+// ★ 初始隐藏
+modal.style.display='none';
+overlay.style.display='none';
+
+function showModal(){
+  modal.style.display='block';
+  overlay.style.display='block';
+  // 强制重绘，然后触发过渡
+  void modal.offsetWidth;
+  modal.classList.add('show');
+  overlay.classList.add('show');
+  document.body.style.overflow='hidden';
+}
+
+function hideModal(){
+  modal.classList.remove('show');
+  overlay.classList.remove('show');
+  document.body.style.overflow='';
+  setTimeout(function(){
+    modal.style.display='none';
+    overlay.style.display='none';
+  },300);
+}
+
+openBtn.onclick=showModal;
 closeBtn.onclick=hideModal;
-modal.onclick=function(e){if(e.target===modal)hideModal()};
-modal.addEventListener('transitionend',function(){if(modal.classList.contains('show')){modal.style.pointerEvents='auto';modal.style.opacity='1'}});
+overlay.onclick=hideModal;
 </script>
 </body>
 </html>
