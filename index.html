@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-ui-mode="desktop" data-sheet="closed" data-sheet-tab="layers" data-drawer="closed">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#151823">
+  <meta name="color-scheme" content="dark">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>🧩 Small Image Generation</title>
+
+  <!-- 首屏之前就判定 UI 模式，避免闪烁；app.js 会复用同一套规则 -->
+  <script>
+  (function () {
+    var root = document.documentElement;
+    try {
+      var forced = null;
+      try { forced = localStorage.getItem('sig.uiMode'); } catch (e) {}
+      if (forced === 'auto') forced = null;
+      if (/[?&]ui=desktop\b/.test(location.search)) forced = 'desktop';
+      if (/[?&]ui=mobile\b/.test(location.search)) forced = 'mobile';
+
+      var ua = navigator.userAgent || '';
+      var mobileUA = /Android|iPhone|iPod|Windows Phone|Mobile/i.test(ua);
+      var touch = (navigator.maxTouchPoints || 0) > 0 || 'ontouchstart' in window;
+      var fine = window.matchMedia ? window.matchMedia('(any-pointer: fine)').matches : true;
+      var w = window.innerWidth, h = window.innerHeight;
+      var mode;
+      if (forced === 'desktop' || forced === 'mobile') mode = forced;
+      else if (mobileUA) mode = 'mobile';
+      else if (touch && !fine && Math.min(w, h) <= 900) mode = 'mobile';
+      else if (w <= 720) mode = 'mobile';
+      else mode = 'desktop';
+
+      root.setAttribute('data-ui-mode', mode);
+      root.setAttribute('data-touch', touch ? '1' : '0');
+      root.setAttribute('data-forced', forced || 'auto');
+    } catch (e) {
+      root.setAttribute('data-ui-mode', 'desktop');
+      root.setAttribute('data-touch', '0');
+      root.setAttribute('data-forced', 'auto');
+    }
+  })();
+  </script>
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <button id="btnDrawer" class="btn icon-lg only-mobile" title="设置" aria-label="设置">☰</button>
+
+      <div class="brand">🧩 <span class="brand-text">Small Image Generation</span></div>
+
+      <div class="topbar-group only-desktop">
+        <button id="btnUndo" class="btn" title="撤销 (Ctrl+Z)">↩ 撤销</button>
+        <button id="btnRedo" class="btn" title="重做 (Ctrl+Y)">↪ 重做</button>
+      </div>
+
+      <div class="topbar-group only-desktop">
+        <span class="dim-label">缩放</span>
+        <button id="btnZoomFit" class="btn" title="缩放以适合窗口">适应</button>
+        <input type="range" id="zoomRange" min="10" max="200" step="5" value="100">
+        <span id="zoomLabel" class="dim-label">100%</span>
+      </div>
+
+      <div class="spacer"></div>
+
+      <div class="topbar-group only-desktop">
+        <button id="btnSaveProjectTop" class="btn" title="保存工程文件，之后可继续编辑 (Ctrl+S)">💾 工程</button>
+        <button id="btnExportPng" class="btn primary" title="导出为 PNG 图片（保留透明）">⬇ 导出 PNG</button>
+        <button id="btnExportJpg" class="btn" title="导出为 JPG 图片">⬇ 导出 JPG</button>
+      </div>
+
+      <div class="topbar-group only-mobile">
+        <button id="mUndo" class="btn icon-lg" title="撤销" aria-label="撤销">↩</button>
+        <button id="mRedo" class="btn icon-lg" title="重做" aria-label="重做">↪</button>
+        <button id="mExport" class="btn primary" title="导出图片" aria-label="导出图片">⬇ 导出</button>
+      </div>
+    </header>
+
+    <div class="main">
+      <!-- 左侧：工具（移动端变为抽屉） -->
+      <aside class="left-panel" id="leftPanel">
+        <div class="drawer-head only-mobile">
+          <span>设置</span>
+          <button id="btnDrawerClose" class="btn mini" aria-label="关闭设置">✕</button>
+        </div>
+
+        <section class="panel-section only-desktop">
+          <h3>工具</h3>
+          <div class="tool-row">
+            <button id="toolSelect" class="btn tool-btn active" title="快捷键 V">🖱 选择 / 移动</button>
+            <button id="toolText" class="btn tool-btn" title="快捷键 T">T 文字</button>
+          </div>
+        </section>
+
+        <section class="panel-section">
+          <h3>界面模式</h3>
+          <select id="uiModeSel">
+            <option value="auto">自动识别（推荐）</option>
+            <option value="mobile">安卓 / 触屏版</option>
+            <option value="desktop">电脑 / 桌面版</option>
+          </select>
+          <p class="hint small" id="uiModeHint"></p>
+        </section>
+
+        <section class="panel-section">
+          <h3>画布尺寸</h3>
+          <select id="canvasPreset"></select>
+          <button id="btnCustomSize" class="btn block">自定义尺寸…</button>
+        </section>
+
+        <section class="panel-section">
+          <h3>对齐画布（选中图层）</h3>
+          <div class="align-grid">
+            <button class="btn align-btn" data-align="left" title="左对齐">⬅</button>
+            <button class="btn align-btn" data-align="hcenter" title="水平居中">↔</button>
+            <button class="btn align-btn" data-align="right" title="右对齐">➡</button>
+            <button class="btn align-btn" data-align="top" title="顶部对齐">⬆</button>
+            <button class="btn align-btn" data-align="vcenter" title="垂直居中">↕</button>
+            <button class="btn align-btn" data-align="bottom" title="底部对齐">⬇</button>
+          </div>
+          <button id="btnCenterBoth" class="btn block">水平 + 垂直居中</button>
+        </section>
+
+        <section class="panel-section">
+          <h3>项目</h3>
+          <button id="btnSaveProject" class="btn block primary">💾 保存工程（可继续编辑）</button>
+          <button id="btnOpenProject" class="btn block">📂 打开工程…</button>
+          <button id="btnNew" class="btn block danger-ghost">🗑 新建 / 清空全部</button>
+          <p class="hint small" id="projectInfo">工程文件保存图层、文字、画布尺寸等全部可编辑信息。</p>
+        </section>
+
+        <section class="panel-section">
+          <h3>缩放到</h3>
+          <div class="mini-btns wrap">
+            <button class="btn mini" data-zoom="0.25">25%</button>
+            <button class="btn mini" data-zoom="0.5">50%</button>
+            <button class="btn mini" data-zoom="1">100%</button>
+            <button class="btn mini" data-zoom="fit">适应</button>
+          </div>
+        </section>
+
+        <section class="panel-section">
+          <h3>快捷键 / 手势</h3>
+          <ul class="shortcuts" id="shortcutList">
+            <li><b>V</b> 选择 / 移动</li>
+            <li><b>T</b> 文字工具（点画布添加）</li>
+            <li><b>双击文字</b> 编辑内容</li>
+            <li><b>Delete</b> 删除图层</li>
+            <li><b>方向键</b> 微调位置（Shift 加速）</li>
+            <li><b>Ctrl+Z / Y</b> 撤销 / 重做</li>
+            <li><b>Ctrl+D</b> 复制图层</li>
+            <li><b>拖入图片</b> 直接添加图层</li>
+          </ul>
+        </section>
+      </aside>
+
+      <div class="drawer-backdrop only-mobile" id="drawerBackdrop"></div>
+
+      <!-- 中间：画布 -->
+      <main class="canvas-area" id="canvasArea">
+        <div class="canvas-wrap" id="canvasWrap">
+          <canvas id="canvas"></canvas>
+        </div>
+
+        <!-- 移动端浮动缩放控件 -->
+        <div class="zoom-pill only-mobile" id="zoomPill">
+          <button class="zp-btn" id="mZoomOut" aria-label="缩小">−</button>
+          <span class="zp-label" id="mZoomLabel">适应</span>
+          <button class="zp-btn" id="mZoomIn" aria-label="放大">＋</button>
+          <button class="zp-fit" id="mZoomFit" aria-label="适应窗口">⤢</button>
+        </div>
+      </main>
+
+      <!-- 右侧：图层 + 属性（移动端变为底部面板） -->
+      <aside class="right-panel" id="rightPanel">
+        <div class="sheet-grabber only-mobile" id="sheetGrabber"><span></span></div>
+        <div class="sheet-tabs only-mobile">
+          <button class="sheet-tab active" data-sheet-tab="layers">图层</button>
+          <button class="sheet-tab" data-sheet-tab="props">属性</button>
+          <span class="spacer"></span>
+          <button class="sheet-tab-btn" id="btnSheetFull" title="全屏 / 半屏">⤢</button>
+          <button class="sheet-tab-btn" id="btnSheetClose" title="收起" aria-label="收起">✕</button>
+        </div>
+
+        <section class="panel-section layers-section" id="paneLayers">
+          <div class="panel-header only-desktop">
+            <h3>图层</h3>
+            <div class="mini-btns">
+              <button id="btnAddText" class="btn mini" title="添加文字图层">+ 文字</button>
+              <button id="btnAddImage" class="btn mini" title="添加图片图层">+ 图片</button>
+            </div>
+          </div>
+          <div class="panel-header second">
+            <div class="mini-btns">
+              <button id="btnDup" class="btn mini" title="复制选中图层 (Ctrl+D)">复制</button>
+              <button id="btnDel" class="btn mini" title="删除选中图层 (Delete)">删除</button>
+              <button id="btnLayerUp" class="btn mini" title="上移一层">▲</button>
+              <button id="btnLayerDown" class="btn mini" title="下移一层">▼</button>
+            </div>
+          </div>
+          <ul id="layerList"></ul>
+        </section>
+
+        <section class="panel-section props-section" id="paneProps">
+          <h3 id="propsTitle">属性</h3>
+          <div id="propsContent"></div>
+        </section>
+      </aside>
+
+      <div class="sheet-backdrop only-mobile" id="sheetBackdrop"></div>
+    </div>
+
+    <!-- 移动端底部工具坞 -->
+    <nav class="dock only-mobile" id="dock">
+      <button class="dock-btn active" id="mToolSelect"><i>🖱</i><span>选择</span></button>
+      <button class="dock-btn" id="mToolText"><i>T</i><span>文字</span></button>
+      <button class="dock-btn" id="mAddText"><i>＋T</i><span>加文字</span></button>
+      <button class="dock-btn" id="mAddImage"><i>＋🖼</i><span>加图片</span></button>
+      <button class="dock-btn" id="mOpenLayers"><i>☰</i><span>图层</span></button>
+      <button class="dock-btn" id="mOpenProps"><i>⚙</i><span>属性</span></button>
+    </nav>
+
+    <footer class="statusbar" id="statusbar"></footer>
+  </div>
+
+  <div id="toast"></div>
+
+  <!-- 通用模态框（替代 prompt / confirm，安卓 WebView 更可靠） -->
+  <div class="modal-mask" id="modalMask">
+    <div class="modal-box" id="modalBox"></div>
+  </div>
+
+  <input type="file" id="fileInput" accept="image/*" multiple hidden>
+  <input type="file" id="bgFileInput" accept="image/*" hidden>
+  <input type="file" id="projectFileInput" accept=".json,application/json,text/plain" hidden>
+  <script src="app.js"></script>
+</body>
+</html>
